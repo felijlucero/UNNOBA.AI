@@ -1,16 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react'
-import "./App.css"
-import { IoCodeSlash, IoSend, IoTime, IoWater } from 'react-icons/io5'
-import { BiPlanet } from 'react-icons/bi'
-import { FaPython } from 'react-icons/fa'
-import { TbMessageChatbot } from 'react-icons/tb'
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import React, { useState, useEffect, useRef } from 'react';
+import './App.css';
+import { IoCodeSlash, IoSend, IoTime, IoWater } from 'react-icons/io5';
+import { BiPlanet } from 'react-icons/bi';
+import { FaPython } from 'react-icons/fa';
+import { TbMessageChatbot } from 'react-icons/tb';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const App = () => {
   const [message, setMessage] = useState("");
   const [isResponseScreen, setisResponseScreen] = useState(false);
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
+
+  const genAI = useRef(new GoogleGenerativeAI("AIzaSyArai09MtPEm3dsvBPZXNsDQko2Gkgwgyw"));
+  const chat = useRef(null);
 
   const hitRequest = () => {
     if (message) {
@@ -23,13 +26,20 @@ const App = () => {
   const generateResponse = async (msg) => {
     if (!msg) return;
 
-    const genAI = new GoogleGenerativeAI("AIzaSyArai09MtPEm3dsvBPZXNsDQko2Gkgwgyw");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(msg);
+    // Crear chat contextual si no existe
+    if (!chat.current) {
+      const model = genAI.current.getGenerativeModel({ model: "gemini-1.5-flash" });
+      chat.current = await model.startChat({
+        history: messages.map(m => ({
+          role: m.type === "userMsg" ? "user" : "model",
+          parts: [{ text: m.text }]
+        }))
+      });
+    }
 
+    const result = await chat.current.sendMessage(msg);
     const responseText = result.response.text();
     const wordCount = responseText.trim().split(/\s+/).length;
-
 
     const newMessages = [
       ...messages,
@@ -50,7 +60,8 @@ const App = () => {
   const newChat = () => {
     setisResponseScreen(false);
     setMessages([]);
-  }
+    chat.current = null;
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,17 +120,17 @@ const App = () => {
 
       <div className="bottom w-full flex flex-col items-center px-[10vw]">
         <div className="inputBox w-full max-w-2xl text-base py-2 flex items-center bg-white rounded-full border border-[#005B96] shadow-sm">
-        <input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => {
-          if (e.key === 'Enter') hitRequest();
-          }}
-          type="text"
-          className='p-3 pl-5 bg-transparent flex-1 outline-none border-none'
-          placeholder='Escribe tu mensaje aquí...'
-          id='messageBox'
-        />
+          <input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') hitRequest();
+            }}
+            type="text"
+            className='p-3 pl-5 bg-transparent flex-1 outline-none border-none'
+            placeholder='Escribe tu mensaje aquí...'
+            id='messageBox'
+          />
           {
             message && <i className='text-[#005B96] text-xl mr-5 cursor-pointer' onClick={hitRequest}><IoSend /></i>
           }
@@ -129,7 +140,7 @@ const App = () => {
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default App;
