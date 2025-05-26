@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
-import { IoCodeSlash, IoSend, IoTime, IoWater } from 'react-icons/io5';
+import { IoCodeSlash, IoRestaurant, IoSend, IoTime, IoWater } from 'react-icons/io5';
 import { BiPlanet } from 'react-icons/bi';
 import { FaPython } from 'react-icons/fa';
 import { TbMessageChatbot } from 'react-icons/tb';
@@ -100,7 +100,7 @@ const App = () => {
             <div className="boxes mt-8 flex items-center gap-4 flex-wrap justify-center px-4">
               <div className="card rounded-lg cursor-pointer transition-all hover:bg-[#A8D0E6] px-5 relative min-h-[20vh] bg-white p-4 shadow-md w-60">
                 <p className='text-base'>¿Cómo funciona el comedor?</p>
-                <i className='absolute right-3 bottom-3 text-xl text-[#005B96]'><IoWater /></i>
+                <i className='absolute right-3 bottom-3 text-xl text-[#005B96]'><IoRestaurant /></i>
               </div>
               <div className="card rounded-lg cursor-pointer transition-all hover:bg-[#A8D0E6] px-5 relative min-h-[20vh] bg-white p-4 shadow-md w-60">
                 <p className='text-base'>¿Cuáles son las<br />Redes de la universidad?</p>
