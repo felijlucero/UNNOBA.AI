@@ -1,8 +1,22 @@
-# React + Vite
+# UNNOBA.AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+UNNOBA.AI es un chatbot institucional desarrollado con **React.js**, **Tailwind CSS** y **Vite**.
 
-Currently, two official plugins are available:
+## Cómo iniciar el proyecto
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Clonar el repositorio:
+
+```bash
+git clone https://github.com/felijlucero/UNNOBA.AI.git
+cd UNNOBA.AI
+```
+
+2. Instalar dependencias:
+```bash
+npm install
+```
+
+3. Iniciar servidor de desarrollo:
+```bash
+npm run dev
+```
