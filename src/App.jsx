@@ -95,7 +95,7 @@ const App = () => {
               <div ref={messagesEndRef} />
             </div>
           </div> :
-          <div className="middle h-[80vh] flex items-center flex-col justify-center">
+          <div className="middle h-[80vh] flex items-center flex-col justify-center mb-10 pb-10">
             <h1 className='text-4xl text-[#005B96] font-bold'>UNNOBA.AI</h1>
             <div className="boxes mt-8 flex items-center gap-4 flex-wrap justify-center px-4">
               <div className="card rounded-lg cursor-pointer transition-all hover:bg-[#A8D0E6] px-5 relative min-h-[20vh] bg-white p-4 shadow-md w-60">
@@ -119,6 +119,9 @@ const App = () => {
       }
 
       <div className="bottom w-full flex flex-col items-center px-[10vw]">
+      <div className="m-5 py-5 flex w-lg items-center">
+       <p className="text-[#005B96] font-bold"> ¡Hola! soy el asistente virtual de la unnoba, ¿En que puedo ayudarte?</p>
+      </div>
         <div className="inputBox w-full max-w-2xl text-base py-2 flex items-center bg-white rounded-full border border-[#005B96] shadow-sm">
           <input
             value={message}
@@ -135,7 +138,7 @@ const App = () => {
             message && <i className='text-[#005B96] text-xl mr-5 cursor-pointer' onClick={hitRequest}><IoSend /></i>
           }
         </div>
-        <p className='text-gray-500 text-sm my-4 text-center'>
+        <p className='text-gray-500 text-sm my-4 text-center text-2xl text-[#005B96]'>
           Chatbot desarrollado para la UNNOBA con el objetivo de ayudar a los/as estudiantes de la misma.
         </p>
       </div>
