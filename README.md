@@ -5,18 +5,22 @@ UNNOBA.AI es un chatbot institucional desarrollado con **React.js**, **Tailwind 
 ## Cómo iniciar el proyecto
 
 1. Clonar el repositorio:
-
 ```bash
 git clone https://github.com/felijlucero/UNNOBA.AI.git
 cd UNNOBA.AI
 ```
 
-2. Instalar dependencias:
+2 Instalar npm: 
+```bash
+sudo apt install npm 
+```
+
+3. Instalar dependencias:
 ```bash
 npm install
 ```
 
-3. Iniciar servidor de desarrollo:
+4. Iniciar servidor de desarrollo:
 ```bash
 npm run dev
 ```
