@@ -72,33 +72,39 @@ const App = () => {
 
   const generateResponse = async (msg) => {
     if (!msg) return;
+  
     setIsGenerating(true);
     setStreamedResponse("");
-
+  
+    // Mostrar el mensaje del usuario inmediatamente
+    const updatedMessages = [...messages, { type: "userMsg", text: msg }];
+    setMessages(updatedMessages);
+    setMessage(""); // limpiar input
+    setisResponseScreen(true); // mostrar pantalla de chat
+  
     try {
-      // Crear chat contextual si no existe
+      // Inicializar chat si no existe
       if (!chat.current) {
         const model = genAI.current.getGenerativeModel({
           model: "gemini-1.5-flash",
         });
         chat.current = await model.startChat({
-          history: messages.map((m) => ({
+          history: updatedMessages.map((m) => ({
             role: m.type === "userMsg" ? "user" : "model",
             parts: [{ text: m.text }],
           })),
         });
       }
-
+  
       const result = await chat.current.sendMessage(msg);
       const responseText = result.response.text();
       const wordCount = responseText.trim().split(/\s+/).length;
-
-      // Efecto de escritura generativa
+  
       let fullText =
         wordCount > 200
           ? "Lo siento, ese último mensaje conlleva una respuesta demasiado larga..."
           : responseText;
-
+  
       let i = 0;
       const typingInterval = setInterval(() => {
         if (i < fullText.length) {
@@ -107,24 +113,22 @@ const App = () => {
           messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         } else {
           clearInterval(typingInterval);
-          const newMessages = [
-            ...messages,
-            { type: "userMsg", text: msg },
+  
+          // Agregar el mensaje de respuesta completo
+          setMessages((prev) => [
+            ...prev,
             { type: "responseMsg", text: fullText },
-          ];
-          setMessages(newMessages);
+          ]);
           setStreamedResponse("");
           setIsGenerating(false);
         }
       }, 20);
-
-      setisResponseScreen(true);
-      setMessage("");
     } catch (error) {
       console.error("Error generating response:", error);
       setIsGenerating(false);
     }
   };
+  
 
   const newChat = () => {
     setisResponseScreen(false);
@@ -222,14 +226,20 @@ const App = () => {
                 UNNOBA.AI
               </motion.h2>
               <motion.button
-                id="newChatBtn"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-[#005B96] text-white p-2 rounded-full text-sm px-5 hover:bg-[#00467a] transition-colors"
-                onClick={newChat}
-              >
-                Nuevo Chat
-              </motion.button>
+  id="newChatBtn"
+  whileHover={!isGenerating ? { scale: 1.05 } : {}}
+  whileTap={!isGenerating ? { scale: 0.95 } : {}}
+  className={`bg-[#005B96] text-white p-2 rounded-full text-sm px-5 transition-colors ${
+    isGenerating
+      ? "opacity-50 cursor-not-allowed"
+      : "hover:bg-[#00467a]"
+  }`}
+  onClick={newChat}
+  disabled={isGenerating}
+>
+  Nuevo Chat
+</motion.button>
+
             </div>
 
             <motion.div
