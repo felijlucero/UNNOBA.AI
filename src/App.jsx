@@ -1,61 +1,134 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './App.css';
-import { IoCodeSlash, IoRestaurant, IoSend, IoTime, IoWater } from 'react-icons/io5';
-import { BiPlanet } from 'react-icons/bi';
-import { FaPython } from 'react-icons/fa';
-import { TbMessageChatbot } from 'react-icons/tb';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { useState, useEffect, useRef } from "react";
+import "./App.css";
+import { IoRestaurant, IoSend, IoTime } from "react-icons/io5";
+import { BiPlanet } from "react-icons/bi";
+import { TbMessageChatbot } from "react-icons/tb";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { motion, AnimatePresence } from "framer-motion";
 
 const App = () => {
   const [message, setMessage] = useState("");
   const [isResponseScreen, setisResponseScreen] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [streamedResponse, setStreamedResponse] = useState("");
   const messagesEndRef = useRef(null);
 
-  const genAI = useRef(new GoogleGenerativeAI("AIzaSyArai09MtPEm3dsvBPZXNsDQko2Gkgwgyw"));
+  const genAI = useRef(
+    new GoogleGenerativeAI("AIzaSyArai09MtPEm3dsvBPZXNsDQko2Gkgwgyw")
+  );
   const chat = useRef(null);
 
-  const hitRequest = () => {
-    if (message) {
-      generateResponse(message);
-    } else {
-      alert("Debes escribir un mensaje.");
+  const [error, setError] = useState(null);
+  const inputRef = useRef(null);
+  const errorTimeoutRef = useRef(null);
+
+  const showError = (message) => {
+    // Limpiar timeout anterior si existe
+    if (errorTimeoutRef.current) {
+      clearTimeout(errorTimeoutRef.current);
     }
+
+    setError(message);
+    inputRef.current?.focus();
+
+    // Configurar timeout para ocultar el error después de 2 segundos
+    errorTimeoutRef.current = setTimeout(() => {
+      setError(null);
+    }, 2000);
   };
+
+  const formatResponseText = (text) => {
+    // Reemplaza los patrones * *** ** con etiquetas <strong>
+    let formattedText = text.replace(/\*\s\*\*\*\s\*\*/g, "<strong>");
+    formattedText = formattedText.replace(/\*\s\*\*\*\s\*\*/g, "</strong>");
+
+    // También maneja el caso de listas con asteriscos
+    formattedText = formattedText.replace(
+      /\*\s\*\*(.*?)\*\*/g,
+      "<strong>$1</strong>"
+    );
+
+    return formattedText;
+  };
+
+  const hitRequest = () => {
+    if (!message.trim()) {
+      showError("Debes escribir un mensaje");
+      return;
+    }
+    setError(null); // Limpiar error inmediatamente si hay mensaje válido
+    generateResponse(message);
+  };
+
+  // Limpiar el timeout cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const generateResponse = async (msg) => {
     if (!msg) return;
-
-    // Crear chat contextual si no existe
-    if (!chat.current) {
-      const model = genAI.current.getGenerativeModel({ model: "gemini-1.5-flash" });
-      chat.current = await model.startChat({
-        history: messages.map(m => ({
-          role: m.type === "userMsg" ? "user" : "model",
-          parts: [{ text: m.text }]
-        }))
-      });
-    }
-
-    const result = await chat.current.sendMessage(msg);
-    const responseText = result.response.text();
-    const wordCount = responseText.trim().split(/\s+/).length;
-
-    const newMessages = [
-      ...messages,
-      { type: "userMsg", text: msg },
-      {
-        type: "responseMsg",
-        text: wordCount > 200
+  
+    setIsGenerating(true);
+    setStreamedResponse("");
+  
+    // Mostrar el mensaje del usuario inmediatamente
+    const updatedMessages = [...messages, { type: "userMsg", text: msg }];
+    setMessages(updatedMessages);
+    setMessage(""); // limpiar input
+    setisResponseScreen(true); // mostrar pantalla de chat
+  
+    try {
+      // Inicializar chat si no existe
+      if (!chat.current) {
+        const model = genAI.current.getGenerativeModel({
+          model: "gemini-1.5-flash",
+        });
+        chat.current = await model.startChat({
+          history: updatedMessages.map((m) => ({
+            role: m.type === "userMsg" ? "user" : "model",
+            parts: [{ text: m.text }],
+          })),
+        });
+      }
+  
+      const result = await chat.current.sendMessage(msg);
+      const responseText = result.response.text();
+      const wordCount = responseText.trim().split(/\s+/).length;
+  
+      let fullText =
+        wordCount > 200
           ? "Lo siento, ese último mensaje conlleva una respuesta demasiado larga..."
-          : responseText,
-      },
-    ];
-
-    setMessages(newMessages);
-    setisResponseScreen(true);
-    setMessage("");
+          : responseText;
+  
+      let i = 0;
+      const typingInterval = setInterval(() => {
+        if (i < fullText.length) {
+          setStreamedResponse(fullText.substring(0, i + 1));
+          i++;
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        } else {
+          clearInterval(typingInterval);
+  
+          // Agregar el mensaje de respuesta completo
+          setMessages((prev) => [
+            ...prev,
+            { type: "responseMsg", text: fullText },
+          ]);
+          setStreamedResponse("");
+          setIsGenerating(false);
+        }
+      }, 20);
+    } catch (error) {
+      console.error("Error generating response:", error);
+      setIsGenerating(false);
+    }
   };
+  
 
   const newChat = () => {
     setisResponseScreen(false);
@@ -63,82 +136,291 @@ const App = () => {
     chat.current = null;
   };
 
+  const handleCardClick = (question) => {
+    setMessage(question);
+    setTimeout(() => {
+      generateResponse(question);
+    }, 300);
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, streamedResponse]);
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    }),
+    hover: { scale: 1.03, backgroundColor: "#A8D0E6" },
+  };
+
+  const messageVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const loadingVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        repeat: Infinity,
+        repeatType: "reverse",
+        duration: 0.8,
+      },
+    },
+  };
+
+  const typingCursorVariants = {
+    blinking: {
+      opacity: [0, 1, 0],
+      transition: {
+        duration: 1,
+        repeat: Infinity,
+        repeatDelay: 0,
+      },
+    },
+  };
 
   return (
-    <div className="container w-screen min-h-screen overflow-x-hidden bg-[#EDEDED] text-[#333333] font-sans">
-      {
-        isResponseScreen ?
-          <div className='h-[80vh] flex flex-col'>
+    <div className="container w-screen min-h-screen overflow-x-hidden bg-[#EDEDED] text-[#333333] font-sans flex flex-col">
+      <AnimatePresence mode="wait">
+        {isResponseScreen ? (
+          <motion.div
+            key="chat-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col flex-1"
+          >
             <div className="header pt-6 flex items-center justify-between w-full px-[10vw]">
-              <h2 className='text-2xl text-[#005B96] font-bold'>UNNOBA.AI</h2>
-              <button id='newChatBtn' className='bg-[#005B96] text-white p-2 rounded-full text-sm px-5 hover:bg-[#00467a]' onClick={newChat}>Nuevo Chat</button>
+              <motion.h2
+                initial={{ x: -20 }}
+                animate={{ x: 0 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="text-2xl text-[#005B96] font-bold"
+              >
+                UNNOBA.AI
+              </motion.h2>
+              <motion.button
+  id="newChatBtn"
+  whileHover={!isGenerating ? { scale: 1.05 } : {}}
+  whileTap={!isGenerating ? { scale: 0.95 } : {}}
+  className={`bg-[#005B96] text-white p-2 rounded-full text-sm px-5 transition-colors ${
+    isGenerating
+      ? "opacity-50 cursor-not-allowed"
+      : "hover:bg-[#00467a]"
+  }`}
+  onClick={newChat}
+  disabled={isGenerating}
+>
+  Nuevo Chat
+</motion.button>
+
             </div>
 
-            <div className="messages px-[10vw] py-4 space-y-4 h-[60vh] overflow-y-auto">
-              {
-                messages?.map((msg, index) => (
-                  <div
+            <motion.div
+              className="messages-container flex-1 px-4 py-4 overflow-y-auto"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <div className="max-w-4xl mx-auto px-4 space-y-4">
+                {messages?.map((msg, index) => (
+                  <motion.div
                     key={index}
-                    className={`p-3 rounded-lg max-w-xl ${
-                      msg.type === 'userMsg'
-                        ? 'bg-[#A8D0E6] self-end text-right ml-auto'
-                        : 'bg-white text-left mr-auto'
+                    variants={messageVariants}
+                    className={`p-4 rounded-2xl max-w-[80%] relative ${
+                      msg.type === "userMsg"
+                        ? "bg-[#005B96] text-white ml-auto rounded-br-none"
+                        : "bg-white text-gray-800 shadow-md mr-auto rounded-bl-none"
                     }`}
-                  >
-                    {msg.text}
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        msg.type === "responseMsg"
+                          ? formatResponseText(msg.text)
+                          : msg.text,
+                    }}
+                  />
+                ))}
+                {isGenerating && streamedResponse && (
+                  <div className="flex items-end">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white p-4 rounded-2xl shadow-md max-w-[80%] mr-auto rounded-bl-none"
+                      dangerouslySetInnerHTML={{
+                        __html: formatResponseText(streamedResponse),
+                      }}
+                    />
+                    <motion.span
+                      className="ml-1 inline-block w-2 h-5 bg-[#005B96] mb-4"
+                      variants={typingCursorVariants}
+                      animate="blinking"
+                    />
                   </div>
-                ))
-              }
-              <div ref={messagesEndRef} />
-            </div>
-          </div> :
-          <div className="middle h-[80vh] flex items-center flex-col justify-center">
-            <h1 className='text-4xl text-[#005B96] font-bold'>UNNOBA.AI</h1>
-            <div className="boxes mt-8 flex items-center gap-4 flex-wrap justify-center px-4">
-              <div className="card rounded-lg cursor-pointer transition-all hover:bg-[#A8D0E6] px-5 relative min-h-[20vh] bg-white p-4 shadow-md w-60">
-                <p className='text-base'>¿Cómo funciona el comedor?</p>
-                <i className='absolute right-3 bottom-3 text-xl text-[#005B96]'><IoRestaurant /></i>
+                )}
+                {isGenerating && !streamedResponse && (
+                  <motion.div
+                    variants={loadingVariants}
+                    animate="visible"
+                    initial="hidden"
+                    className="bg-white p-4 rounded-2xl shadow-md max-w-[40%] mr-auto rounded-bl-none"
+                  >
+                    <div className="flex space-x-2 justify-start">
+                      <div className="w-2 h-2 rounded-full bg-[#005B96]"></div>
+                      <div className="w-2 h-2 rounded-full bg-[#005B96]"></div>
+                      <div className="w-2 h-2 rounded-full bg-[#005B96]"></div>
+                    </div>
+                  </motion.div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
-              <div className="card rounded-lg cursor-pointer transition-all hover:bg-[#A8D0E6] px-5 relative min-h-[20vh] bg-white p-4 shadow-md w-60">
-                <p className='text-base'>¿Cuáles son las<br />Redes de la universidad?</p>
-                <i className='absolute right-3 bottom-3 text-xl text-[#005B96]'><BiPlanet /></i>
+            </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="welcome-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center justify-center flex-1"
+          >
+            <motion.h1
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="text-4xl text-[#005B96] font-bold mb-8"
+            >
+              UNNOBA.AI
+            </motion.h1>
+            <motion.div
+              className="w-full max-w-5xl px-4"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  {
+                    question: "¿Cómo funciona el comedor?",
+                    icon: <IoRestaurant />,
+                  },
+                  {
+                    question: "¿Cuáles son las\nRedes de la universidad?",
+                    icon: <BiPlanet />,
+                  },
+                  {
+                    question: "¿Existe un\nCalendario Académico?",
+                    icon: <IoTime />,
+                  },
+                  {
+                    question: "¿Existe algún\ncontacto de ayuda?",
+                    icon: <TbMessageChatbot />,
+                  },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    custom={i}
+                    variants={cardVariants}
+                    whileHover="hover"
+                    className="card rounded-lg cursor-pointer px-5 relative min-h-[180px] bg-white p-6 shadow-md flex flex-col"
+                    onClick={() =>
+                      handleCardClick(item.question.split("\n").join(" "))
+                    }
+                  >
+                    <p className="text-base whitespace-pre-line mb-6">
+                      {item.question}
+                    </p>
+                    <div className="mt-auto text-right">
+                      <i className="text-xl text-[#005B96]">{item.icon}</i>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-              <div className="card rounded-lg cursor-pointer transition-all hover:bg-[#A8D0E6] px-5 relative min-h-[20vh] bg-white p-4 shadow-md w-60">
-                <p className='text-base'>¿Existe un<br />Calendario Académico?</p>
-                <i className='absolute right-3 bottom-3 text-xl text-[#005B96]'><IoTime /></i>
-              </div>
-              <div className="card rounded-lg cursor-pointer transition-all hover:bg-[#A8D0E6] px-5 relative min-h-[20vh] bg-white p-4 shadow-md w-60">
-                <p className='text-base'>¿Existe algún<br />contacto de ayuda?</p>
-                <i className='absolute right-3 bottom-3 text-xl text-[#005B96]'><TbMessageChatbot /></i>
-              </div>
-            </div>
-          </div>
-      }
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div className="bottom w-full flex flex-col items-center px-[10vw]">
-        <div className="inputBox w-full max-w-2xl text-base py-2 flex items-center bg-white rounded-full border border-[#005B96] shadow-sm">
+      <motion.div
+        className="bottom w-full py-4 flex flex-col items-center px-[10vw] bg-[#EDEDED] border-t border-gray-300"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <motion.div
+          className="inputBox w-full max-w-2xl text-base py-2 flex items-center bg-white rounded-full border border-[#005B96] shadow-sm px-4"
+          whileFocus={{ boxShadow: "0 0 0 2px rgba(0, 91, 150, 0.2)" }}
+        >
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') hitRequest();
+              if (e.key === "Enter") hitRequest();
             }}
             type="text"
-            className='p-3 pl-5 bg-transparent flex-1 outline-none border-none'
-            placeholder='Escribe tu mensaje aquí...'
-            id='messageBox'
+            className="p-3 pl-3 bg-transparent flex-1 outline-none border-none"
+            placeholder="Escribe tu mensaje aquí..."
+            id="messageBox"
           />
-          {
-            message && <i className='text-[#005B96] text-xl mr-5 cursor-pointer' onClick={hitRequest}><IoSend /></i>
-          }
-        </div>
-        <p className='text-gray-500 text-sm my-4 text-center'>
-          Chatbot desarrollado para la UNNOBA con el objetivo de ayudar a los/as estudiantes de la misma.
-        </p>
-      </div>
+          {message && (
+            <motion.button
+              className="text-[#005B96] text-xl cursor-pointer bg-transparent border-none"
+              onClick={hitRequest}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              disabled={isGenerating}
+            >
+              <IoSend />
+            </motion.button>
+          )}
+
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="text-red-500 text-sm mt-1"
+            >
+              {error}
+            </motion.p>
+          )}
+        </motion.div>
+        <motion.p
+          className="text-gray-500 text-sm mt-4 text-center max-w-2xl"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+        >
+          Chatbot desarrollado para la UNNOBA con el objetivo de ayudar a los/as
+          estudiantes de la misma.
+        </motion.p>
+      </motion.div>
     </div>
   );
 };
