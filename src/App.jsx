@@ -14,10 +14,14 @@ const App = () => {
   const [streamedResponse, setStreamedResponse] = useState("");
   const messagesEndRef = useRef(null);
 
+  const prompt = `Eres un asistente de chatbot para la Universidad Nacional del Noroeste de la Provincia de Buenos Aires (UNNOBA). Tu función es proporcionar información precisa y relevante únicamente sobre temas relacionados con la UNNOBA, como el calendario académico, inscripciones, comedor universitario, biblioteca, planes de estudio (especialmente Ingeniería Informática, Licenciatura en Sistemas y Analista en Sistemas), correlatividades, contactos útiles, funciones del centro de estudiantes, N-4, extensiones y reválidas, intercambio estudiantil, distribución de aulas, exámenes finales, y redes sociales oficiales.
+  Si la pregunta del usuario no está directamente relacionada con la UNNOBA o con los temas que te han sido indicados, debes responder amablemente que solo puedes asistir con consultas relacionadas con la universidad.`;
+
   const genAI = useRef(
-    new GoogleGenerativeAI("AIzaSyArai09MtPEm3dsvBPZXNsDQko2Gkgwgyw")
+    new GoogleGenerativeAI("AIzaSyBBZTPaJ_X6bGwycELmkpMRYpyCZOVk9J0")
   );
-  const chat = useRef(null);
+  const chat = useRef(null);  
+  
 
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
@@ -88,12 +92,20 @@ const App = () => {
         const model = genAI.current.getGenerativeModel({
           model: "gemini-1.5-flash",
         });
+        const chatHistory = [
+        {
+          role: "user",
+          parts: [{ text: prompt }], // esto le da contexto de su rol
+        },
+        ...updatedMessages.map((m) => ({
+          role: m.type === "userMsg" ? "user" : "model",
+          parts: [{ text: m.text }],
+        })),
+      ];
         chat.current = await model.startChat({
-          history: updatedMessages.map((m) => ({
-            role: m.type === "userMsg" ? "user" : "model",
-            parts: [{ text: m.text }],
-          })),
+        history: chatHistory,
         });
+
       }
   
       const result = await chat.current.sendMessage(msg);
