@@ -14,13 +14,9 @@ const App = () => {
   const [streamedResponse, setStreamedResponse] = useState("");
   const messagesEndRef = useRef(null);
 
-<<<<<<< HEAD
-  const prompt = `Eres un asistente de chatbot para la Universidad Nacional del Noroeste de la Provincia de Buenos Aires (UNNOBA). Tu función es proporcionar información precisa y relevante únicamente sobre temas relacionados con la UNNOBA, como el calendario académico, inscripciones, comedor universitario, biblioteca, planes de estudio (especialmente Ingeniería Informática, Licenciatura en Sistemas y Analista en Sistemas), correlatividades, contactos útiles, funciones del centro de estudiantes, N-4, extensiones y reválidas, intercambio estudiantil, distribución de aulas, exámenes finales, y redes sociales oficiales.
-  Si la pregunta del usuario no está directamente relacionada con la UNNOBA o con los temas que te han sido indicados, debes responder amablemente que solo puedes asistir con consultas relacionadas con la universidad.`;
-=======
-    const prompt = `Eres un asistente de chatbot para la Universidad Nacional del Noroeste de la Provincia de Buenos Aires (UNNOBA). Tu función es proporcionar información precisa y relevante únicamente sobre temas relacionados con la UNNOBA, como el calendario académico, inscripciones, comedor universitario, biblioteca, planes de estudio (especialmente Ingeniería Informática, Licenciatura en Sistemas y Analista en Sistemas), correlatividades, contactos útiles, funciones del centro de estudiantes, N-4, extensiones y reválidas, intercambio estudiantil, distribución de aulas, exámenes finales, y redes sociales oficiales.
-    Si la pregunta del usuario no está directamente relacionada con la UNNOBA o con los temas que te han sido indicados, debes responder amablemente que solo puedes asistir con consultas relacionadas con la universidad.`;
->>>>>>> t-9-LimitarGemini
+const prompt = `Eres un asistente de chatbot para la Universidad Nacional del Noroeste de la Provincia de Buenos Aires (UNNOBA). Tu función es proporcionar información precisa y relevante únicamente sobre temas relacionados con la UNNOBA, como el calendario académico, inscripciones, comedor universitario, biblioteca, planes de estudio (especialmente Ingeniería Informática, Licenciatura en Sistemas y Analista en Sistemas), correlatividades, contactos útiles, funciones del centro de estudiantes, N-4, extensiones y reválidas, intercambio estudiantil, distribución de aulas, exámenes finales, y redes sociales oficiales.
+Si la pregunta del usuario no está directamente relacionada con la UNNOBA o con los temas que te han sido indicados, debes responder amablemente que solo puedes asistir con consultas relacionadas con la universidad.`;
+
 
   const genAI = useRef(
     new GoogleGenerativeAI("AIzaSyBBZTPaJ_X6bGwycELmkpMRYpyCZOVk9J0")
@@ -97,22 +93,6 @@ const App = () => {
         const model = genAI.current.getGenerativeModel({
           model: "gemini-1.5-flash",
         });
-<<<<<<< HEAD
-        const chatHistory = [
-        {
-          role: "user",
-          parts: [{ text: prompt }], // esto le da contexto de su rol
-        },
-        ...updatedMessages.map((m) => ({
-          role: m.type === "userMsg" ? "user" : "model",
-          parts: [{ text: m.text }],
-        })),
-      ];
-        chat.current = await model.startChat({
-        history: chatHistory,
-        });
-
-=======
         const initialSystemMessage = {
           role: "user", // o "system", si el modelo lo acepta
           parts: [{ text: prompt }],
@@ -130,7 +110,7 @@ const App = () => {
           chat.current = await model.startChat({
             history: chatHistory,
           });
->>>>>>> t-9-LimitarGemini
+
       }
   
       const result = await chat.current.sendMessage(msg);
@@ -174,11 +154,35 @@ const App = () => {
   };
 
   const handleCardClick = (question) => {
+  const respuestasPredefinidas = {
+    "¿Dónde puedo contactar a la universidad o cuáles son sus redes sociales?":
+    "<strong style='color: #007bbf;'>Redes de la Universidad</strong><br />Instagram: @elegiunnoba o @unnobanoticias<br />Facebook: NoticiasUNNOBA<br />Web: www.unnoba.edu.ar<br /><br /><strong style='color:rgb(150, 0, 137);'>Centro de estudiantes</strong><br />Vía Instagram:<br />Franja Morada Junín: @franjaunnobajunin<br />Franja Morada Pergamino: @franjamoradaunnoba<br /><br /><strong style='color:gray;'>Contactos institucionales📧</strong><br /> estudiantes@unnoba.edu.ar<br />También podés acercarte a Bienestar Estudiantil en tu sede.",
+    "¿Cómo y cuándo me inscribo a materias o finales?":
+      "Las inscripciones a materias y finales se realizan desde el sistema <a href='https://g3w3.unnoba.edu.ar/g3w3/' target='_blank' style='color:#005B96; font-weight:bold;'>SIU-Guaraní</a>, ingresando con tu cuenta institucional.<br /><br />📅 Las fechas exactas para inscripciones, cursadas, finales y recesos están publicadas en el <a href='https://elegi.unnoba.edu.ar/calendarioacademico/' target='_blank' style='color:#005B96; font-weight:bold;'>Calendario Académico</a> de la UNNOBA. Te recomendamos revisarlo con frecuencia.<br /><br />⚠️ Recordá que algunas materias o finales requieren tener otras materias aprobadas (correlatividades). Para conocerlas, revisá el plan de estudios de tu carrera en el<a href='https://unnoba.edu.ar/' target='_blank' style='color:#005B96; font-weight:bold;'> sitio oficial de la UNNOBA</a>.",
+    "¿Cómo funciona el comedor?":
+      "Para utilizar el comedor universitario debés ingresar a <a href='https://comedor.unnoba.edu.ar/' target='_blank' style='color:#005B96; font-weight:bold;'>comedor.unnoba.edu.ar</a> con tu cuenta institucional y realizar la reserva.<br /><br />🍽️ Cada día se ofrecen dos menús, y al acceder con tu cuenta UNNOBA obtenés un descuento especial.<br /><br />📍 Dirección del comedor: Jorge Newbery 348, Junín, Buenos Aires (CP 6000).",
+    "¿Como utilizo la plataforma virtual o campus?":
+      "Al acceder a la plataforma virtual <a href='https://plataformaed.unnoba.edu.ar' target='_blank' style='color:#005B96; font-weight:bold;'>plataformaed.unnoba.edu.ar</a> vas a encontrar todas las materias que estés cursando actualmente o que hayas cursado previamente.<br /><br />📩 Para ingresar necesitás tu cuenta institucional de la UNNOBA. Si no podés acceder, consultá con la Dirección de Alumnos o el área de soporte académico.",
+  };
+
+  const respuesta = respuestasPredefinidas[question];
+
+  if (respuesta) {
+    setMessages((prev) => [
+      ...prev,
+      { type: "userMsg", text: question },
+      { type: "responseMsg", text: respuesta },
+    ]);
+    setisResponseScreen(true);
+  } else {
+    // Si no es uno de los atajos, va por IA
     setMessage(question);
     setTimeout(() => {
       generateResponse(question);
     }, 300);
-  };
+  }
+};
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -364,21 +368,22 @@ const App = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   {
-                    question: "¿Cómo funciona el comedor?",
-                    icon: <IoRestaurant />,
-                  },
-                  {
-                    question: "¿Cuáles son las\nRedes de la universidad?",
+                    question: "¿Dónde puedo contactar a la universidad o cuáles son sus redes sociales?",
                     icon: <BiPlanet />,
                   },
                   {
-                    question: "¿Existe un\nCalendario Académico?",
+                    question: "¿Como utilizo la plataforma virtual o campus?",
+                    icon: <TbMessageChatbot />,
+                  },
+                  {
+                    question: "¿Cómo y cuándo me inscribo a materias o finales?", 
                     icon: <IoTime />,
                   },
                   {
-                    question: "¿Existe algún\ncontacto de ayuda?",
-                    icon: <TbMessageChatbot />,
+                    question: "¿Cómo funciona el comedor?",
+                    icon: <IoRestaurant />,
                   },
+                  
                 ].map((item, i) => (
                   <motion.div
                     key={i}
