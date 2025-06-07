@@ -1,0 +1,12 @@
+.header {
+  padding: 1rem 10vw;
+  background-color: #ededed;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.bottom {
+  width: 100%;
+  padding: 1rem 0;
+  background-color: #ededed;
+  border-top: 1px solid #e0e0e0;
+}
