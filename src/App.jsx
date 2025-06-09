@@ -29,7 +29,10 @@ const App = () => {
 
   // Efecto para cambiar el tema del documento
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDarkMode ? "dark" : "light"
+    );
   }, [isDarkMode]);
 
   const toggleTheme = () => {
@@ -132,7 +135,6 @@ const App = () => {
           setIsGenerating(false);
         }
       }, 20);
-
     } catch (error) {
       console.error("Error generating response:", error);
       setIsGenerating(false);
@@ -169,7 +171,7 @@ const App = () => {
     }),
     hover: {
       scale: 1.03,
-      y: -5
+      y: -5,
     },
   };
 
@@ -226,9 +228,18 @@ const App = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            style={{ display: 'flex', flexDirection: 'column', flex: 1 }}
+            style={{ display: "flex", flexDirection: "column", flex: 1 }}
           >
-            <div className="header" style={{ paddingTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div
+              className="header"
+              style={{
+                paddingTop: "1.5rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
               <motion.h2
                 initial={{ x: -20 }}
                 animate={{ x: 0 }}
@@ -237,15 +248,17 @@ const App = () => {
               >
                 UNNOBA.AI
               </motion.h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              >
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="btn-theme"
                   onClick={toggleTheme}
                   style={{
-                    backgroundColor: isDarkMode ? '#f59e0b' : '#374151',
-                    color: isDarkMode ? '#111827' : 'white'
+                    backgroundColor: isDarkMode ? "#f59e0b" : "#374151",
+                    color: isDarkMode ? "#111827" : "white",
                   }}
                 >
                   {isDarkMode ? "☀️" : "🌙"}
@@ -269,12 +282,23 @@ const App = () => {
               initial="hidden"
               animate="visible"
             >
-              <div style={{ maxWidth: '64rem', margin: '0 auto', padding: '0 1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div
+                style={{
+                  maxWidth: "64rem",
+                  margin: "0 auto",
+                  padding: "0 1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                }}
+              >
                 {messages?.map((msg, index) => (
                   <motion.div
                     key={index}
                     variants={messageVariants}
-                    className={msg.type === "userMsg" ? "user-message" : "bot-message"}
+                    className={
+                      msg.type === "userMsg" ? "user-message" : "bot-message"
+                    }
                     dangerouslySetInnerHTML={{
                       __html:
                         msg.type === "responseMsg"
@@ -284,7 +308,7 @@ const App = () => {
                   />
                 ))}
                 {isGenerating && streamedResponse && (
-                  <div style={{ display: 'flex', alignItems: 'end' }}>
+                  <div style={{ display: "flex", alignItems: "end" }}>
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -306,7 +330,7 @@ const App = () => {
                     animate="visible"
                     initial="hidden"
                     className="bot-message"
-                    style={{ maxWidth: '40%' }}
+                    style={{ maxWidth: "40%" }}
                   >
                     <div className="loading-dots">
                       <div className="loading-dot"></div>
@@ -326,9 +350,25 @@ const App = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              flex: 1,
+            }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', maxWidth: '80rem', padding: '0 1rem', marginBottom: '2rem' }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                maxWidth: "80rem",
+                padding: "0 1rem",
+                marginBottom: "2rem",
+              }}
+            >
               <div></div>
               <motion.h1
                 initial={{ scale: 0.9 }}
@@ -344,30 +384,32 @@ const App = () => {
                 className="btn-theme"
                 onClick={toggleTheme}
                 style={{
-                  backgroundColor: isDarkMode ? '#f59e0b' : '#374151',
-                  color: isDarkMode ? '#111827' : 'white'
+                  backgroundColor: isDarkMode ? "#f59e0b" : "#374151",
+                  color: isDarkMode ? "#111827" : "white",
                 }}
               >
                 {isDarkMode ? "☀️" : "🌙"}
               </motion.button>
             </div>
             <motion.div
-              style={{ width: '100%', maxWidth: '80rem', padding: '0 1rem' }}
+              style={{ width: "100%", maxWidth: "80rem", padding: "0 1rem" }}
               variants={containerVariants}
               initial="hidden"
               animate="visible"
             >
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '1.5rem',
-                '@media (min-width: 768px)': {
-                  gridTemplateColumns: 'repeat(2, 1fr)'
-                },
-                '@media (min-width: 1024px)': {
-                  gridTemplateColumns: 'repeat(4, 1fr)'
-                }
-              }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                  gap: "1.5rem",
+                  "@media (min-width: 768px)": {
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                  },
+                  "@media (min-width: 1024px)": {
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                  },
+                }}
+              >
                 {[
                   {
                     question: "¿Cómo funciona el comedor?",
@@ -396,12 +438,8 @@ const App = () => {
                       handleCardClick(item.question.split("\n").join(" "))
                     }
                   >
-                    <p className="card-text">
-                      {item.question}
-                    </p>
-                    <div className="card-icon">
-                      {item.icon}
-                    </div>
+                    <p className="card-text">{item.question}</p>
+                    <div className="card-icon">{item.icon}</div>
                   </motion.div>
                 ))}
               </div>
@@ -412,7 +450,14 @@ const App = () => {
 
       <motion.div
         className="bottom"
-        style={{ width: '100%', padding: '1rem 10vw', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+        style={{
+          width: "100%",
+          maxWidth: "48rem",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: "1rem 0",
+        }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
@@ -420,15 +465,15 @@ const App = () => {
         <motion.div
           className="inputBox"
           style={{
-            width: '100%',
-            maxWidth: '32rem',
-            fontSize: '1rem',
-            padding: '0.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            borderRadius: '9999px',
-            paddingLeft: '1rem',
-            paddingRight: '1rem'
+            width: "100%",
+            maxWidth: "32rem",
+            fontSize: "1rem",
+            padding: "0.5rem",
+            display: "flex",
+            alignItems: "center",
+            borderRadius: "9999px",
+            paddingLeft: "1rem",
+            paddingRight: "1rem",
           }}
           whileFocus={{ boxShadow: "0 0 0 2px rgba(0, 91, 150, 0.2)" }}
         >
@@ -441,11 +486,11 @@ const App = () => {
             }}
             type="text"
             style={{
-              padding: '0.75rem',
-              paddingLeft: '0.75rem',
+              padding: "0.75rem",
+              paddingLeft: "0.75rem",
               flex: 1,
-              outline: 'none',
-              border: 'none'
+              outline: "none",
+              border: "none",
             }}
             placeholder="Escribe tu mensaje aquí..."
             id="messageBox"
@@ -453,15 +498,15 @@ const App = () => {
           {message && (
             <motion.button
               style={{
-                fontSize: '1.25rem',
-                cursor: 'pointer',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--accent-color)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '0.5rem'
+                fontSize: "1.25rem",
+                cursor: "pointer",
+                background: "transparent",
+                border: "none",
+                color: "var(--accent-color)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0.5rem",
               }}
               onClick={hitRequest}
               whileHover={{ scale: 1.1 }}
