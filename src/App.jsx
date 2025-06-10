@@ -174,7 +174,7 @@ Si la pregunta del usuario no está directamente relacionada con la UNNOBA o con
           setStreamedResponse("");
           setIsGenerating(false);
         }
-      }, 20);
+      }, 20)};
     } catch (error) {
       console.error("Error generating response:", error);
       setIsGenerating(false);
@@ -278,6 +278,18 @@ Si la pregunta del usuario no está directamente relacionada con la UNNOBA o con
       },
     },
   };
+
+  const welcomeMessage = '¡Hola! soy el asistente virtual de la unnoba, ¿En que puedo ayudarte?';
+  const [displayedMessage, setDisplayedMessage] = useState('');
+  const typingSpeed = 75;
+  useEffect(() => {
+    if (displayedMessage.length < welcomeMessage.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedMessage(welcomeMessage.substring(0, displayedMessage.length + 1));
+      }, typingSpeed);
+      return () => clearTimeout(timeout);
+    }
+  }, [displayedMessage, welcomeMessage, typingSpeed]);
 
   return (
     <div className="container w-screen min-h-screen overflow-x-hidden bg-[#EDEDED] text-[#333333] font-sans flex flex-col">
@@ -399,6 +411,9 @@ Si la pregunta del usuario no está directamente relacionada con la UNNOBA o con
               initial="hidden"
               animate="visible"
             >
+                <div className="m-5 py-5 flex flex-col w-lg items-center">
+                  <p className="text-[#005B96] font-bold"> {displayedMessage}</p>
+                </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   {

@@ -1,4 +1,7 @@
+/node_modules/*
 node_modules/
+package.json
+package-locked.json
 .env
 dist/
 .DS_Store
