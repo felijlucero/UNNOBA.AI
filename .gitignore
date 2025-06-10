@@ -1,3 +1,4 @@
+/node_modules/*
 node_modules/.vite/*
 _metadata.json
 node_modules/.vite/deps/_metadata.json
