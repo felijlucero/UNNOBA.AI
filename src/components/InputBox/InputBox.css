@@ -1,0 +1,55 @@
+.input-container {
+  width: 100%;
+  max-width: 60rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.inputBox {
+  transition: all 0.3s ease;
+  background-color: var(--bg-card);
+  border: 1px solid var(--accent-color);
+  color: var(--text-primary);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+}
+
+.input-field {
+  width: 100%;
+  font-size: 1rem;
+  background-color: transparent;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+  padding: 0.75rem;
+  flex: 1;
+  outline: none;
+  border: none;
+}
+
+.input-field::placeholder {
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+
+.send-button {
+  font-size: 1.25rem;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  text-align: center;
+}

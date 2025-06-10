@@ -1,0 +1,19 @@
+.typing-cursor {
+  display: inline-block;
+  width: 0.125rem;
+  height: 1.25rem;
+  background-color: var(--accent-color);
+  margin-left: 0.25rem;
+  margin-bottom: 1rem;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}

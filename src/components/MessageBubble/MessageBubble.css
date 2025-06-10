@@ -1,0 +1,21 @@
+/* Mensaje del usuario (derecha) */
+.user-message {
+  align-self: flex-end;
+  border-radius: 1.5rem 1.5rem 0 1.5rem;
+  background-color: var(--accent-color);
+  color: white;
+  box-shadow: 0 2px 4px var(--shadow-light);
+  padding: 1rem;
+  max-width: 80%;
+}
+
+/* Mensaje del bot (izquierda) */
+.bot-message {
+  align-self: flex-start;
+  border-radius: 1.5rem 1.5rem 1.5rem 0;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 2px 4px var(--shadow-light);
+  padding: 1rem;
+  max-width: 80%;
+}
