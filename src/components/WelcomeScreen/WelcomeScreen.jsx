@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { IoRestaurant, IoTime } from "react-icons/io5";
+import { IoRestaurant, IoTime, IoLibrary } from "react-icons/io5";
 import { BiPlanet } from "react-icons/bi";
-import { TbMessageChatbot } from "react-icons/tb";
+import { TbMessageChatbot, TbSchool, TbMapPin } from "react-icons/tb";
+import { MdEventNote } from "react-icons/md";
 import PropTypes from "prop-types";
 import Card from "../Card/Card";
 import { WELCOME_MESSAGE, TYPING_SPEED } from "../../utils/constants";
@@ -35,12 +36,27 @@ const WelcomeScreen = ({ onCardClick }) => {
 
   const cards = [
     {
-      question:
-        "¿Dónde puedo contactar a la universidad o cuáles son sus redes sociales?",
-      icon: <BiPlanet />,
+      question: "¿Cómo me inscribo a las materias?",
+      icon: <TbSchool />,
     },
     {
-      question: "¿Como utilizo la plataforma virtual o campus?",
+      question: "¿Dónde está la biblioteca?",
+      icon: <IoLibrary />,
+    },
+    {
+      question: "¿Dónde se cursa cada materia?",
+      icon: <TbMapPin />,
+    },
+    {
+      question: "¿Dónde veo mi calendario académico?",
+      icon: <MdEventNote />,
+    },
+    {
+      question: "¿Cómo funciona el comedor?",
+      icon: <IoRestaurant />,
+    },
+    {
+      question: "¿Como utilizo la plataforma virtual?",
       icon: <TbMessageChatbot />,
     },
     {
@@ -48,8 +64,9 @@ const WelcomeScreen = ({ onCardClick }) => {
       icon: <IoTime />,
     },
     {
-      question: "¿Cómo funciona el comedor?",
-      icon: <IoRestaurant />,
+      question:
+        "¿Dónde puedo contactar a la universidad o cuáles son sus redes sociales?",
+      icon: <BiPlanet />,
     },
   ];
 

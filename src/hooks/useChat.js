@@ -6,6 +6,7 @@ import {
   RESPONSE_TYPING_SPEED,
   MAX_WORD_COUNT,
 } from "../utils/constants";
+import { handleResponse } from "../utils/responseHandler";
 
 export const useChat = () => {
   const [message, setMessage] = useState("");
@@ -46,6 +47,53 @@ export const useChat = () => {
     setIsResponseScreen(true);
 
     try {
+      // Verificar si es una respuesta predefinida o dinámica
+      const responseData = handleResponse(msg);
+
+      if (
+        responseData.type === "predefined" ||
+        responseData.type === "dynamic" ||
+        responseData.type === "unnoba_topic"
+      ) {
+        // Es una respuesta predefinida, dinámica o tema de UNNOBA
+        let fullText = responseData.response;
+
+        let i = 0;
+        const typingInterval = setInterval(() => {
+          if (i < fullText.length) {
+            setStreamedResponse(fullText.substring(0, i + 1));
+            if (pausarUnnobaAi.current) {
+              clearInterval(typingInterval);
+              const interruptedText =
+                fullText.substring(0, i) + ". Se ha interrumpido la respuesta.";
+              setMessages((prev) => [
+                ...prev,
+                { type: "responseMsg", text: interruptedText },
+              ]);
+              setIsGenerating(false);
+              pausarUnnobaAi.current = false;
+            }
+            if (saltosDeLinea.current) {
+              fullText = fullText.slice(0, i) + "\n" + fullText.slice(i);
+              saltosDeLinea.current = false;
+            }
+            i++;
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          } else {
+            clearInterval(typingInterval);
+            setMessages((prev) => [
+              ...prev,
+              { type: "responseMsg", text: fullText },
+            ]);
+            setStreamedResponse("");
+            setIsGenerating(false);
+          }
+        }, RESPONSE_TYPING_SPEED);
+
+        return;
+      }
+
+      // Si no es predefinida, usar IA
       if (!chat.current) {
         const model = genAI.current.getGenerativeModel({
           model: API_CONFIG.model,
@@ -127,11 +175,28 @@ export const useChat = () => {
   };
 
   const addPredefinedResponse = (question, response) => {
-    setMessages((prev) => [
-      ...prev,
-      { type: "userMsg", text: question },
-      { type: "responseMsg", text: response },
-    ]);
+    // Verificar si es una respuesta dinámica o tema de UNNOBA
+    const responseData = handleResponse(question);
+
+    if (
+      responseData.type === "dynamic" ||
+      responseData.type === "unnoba_topic"
+    ) {
+      // Usar la respuesta dinámica o de tema UNNOBA
+      setMessages((prev) => [
+        ...prev,
+        { type: "userMsg", text: question },
+        { type: "responseMsg", text: responseData.response },
+      ]);
+    } else {
+      // Usar la respuesta predefinida tradicional
+      setMessages((prev) => [
+        ...prev,
+        { type: "userMsg", text: question },
+        { type: "responseMsg", text: response },
+      ]);
+    }
+
     setIsResponseScreen(true);
   };
 
