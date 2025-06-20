@@ -1,11 +1,18 @@
-import { useState, useRef } from "react";
+ import { useState, useRef } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getContenidoIngInformatica, getContenidoAnalistSistemas, getContenidoLicSistemas, getContenidoEnfermeria, getContenidoGenetica } from "../service/get";
 import {
+  INTERCAMBIO_PROMPT,
+  PROMPT_CENTRO_ESTUDIANTES,
+  PROMPT_INSCRIPCIONES,
+  PREGUNTAS_FRECUENTES,
+  PPS_PROMPT,
   SYSTEM_PROMPT,
   API_CONFIG,
   RESPONSE_TYPING_SPEED,
   MAX_WORD_COUNT,
 } from "../utils/constants";
+import { text } from "motion/react-client";
 
 export const useChat = () => {
   const [message, setMessage] = useState("");
@@ -50,11 +57,19 @@ export const useChat = () => {
         const model = genAI.current.getGenerativeModel({
           model: API_CONFIG.model,
         });
+        const PROMPT_INGINFORMATICA = await getContenidoIngInformatica();
+        const PROMPT_ANALISTASISTEMAS = await getContenidoAnalistSistemas();
+        const PROMPT_LICSISTEMAS = await getContenidoLicSistemas();
+        const PROMPT_ENFERMERIA = await getContenidoEnfermeria();
+        const PROMPT_GENETICA = await getContenidoGenetica();
         const chatHistory = [
-          {
-            role: "user",
-            parts: [{ text: SYSTEM_PROMPT }],
-          },
+          { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
+              { role: "user", parts: [{ text: PROMPT_INGINFORMATICA }] },
+              { role: "user", parts: [{ text: PROMPT_ANALISTASISTEMAS }] },
+              { role: "user", parts: [{ text: PROMPT_LICSISTEMAS }] },
+              { role: "user", parts: [{ text: PPS_PROMPT }] },
+              { role: "user", parts: [{ text: PROMPT_GENETICA }] },
+              { role: "user", parts: [{ text: PROMPT_ENFERMERIA }] },
           ...updatedMessages.map((m) => ({
             role: m.type === "userMsg" ? "user" : "model",
             parts: [{ text: m.text }],
