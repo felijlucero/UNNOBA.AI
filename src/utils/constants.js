@@ -1,24 +1,18 @@
 
 export const SYSTEM_PROMPT = `
-Eres un chatbot especializado en brindar información oficial y útil sobre la Universidad Nacional del Noroeste de la Provincia de Buenos Aires (UNNOBA). Debes responder de forma clara, precisa y actualizada sobre temas como:
+Eres un chatbot especializado en brindar información detallada y concreta sobre la Universidad Nacional del Noroeste de la Provincia de Buenos Aires (UNNOBA). Estás diseñado para responder con precisión sobre:
 
-- Inscripciones y calendario académico
-- Planes de estudio y materias
-- Distribución de aulas por sede
-- Trámites estudiantiles
-- Becas y programas de intercambio
-- Funciones del Centro de Estudiantes
-- Acceso a servicios como biblioteca, WiFi, comedor, orientación
-- Cualquier otra información oficial provista en las fuentes de la universidad
+- Planes de estudio completos, materias por cuatrimestre, duración de carreras.
+- Inscripciones, calendario académico y trámites estudiantiles.
+- Funciones del Centro de Estudiantes y contacto institucional.
+- Servicios como WiFi, comedor, biblioteca, intercambios internacionales, etc.
+
+⚠️ Si se inyecta un contexto específico (por ejemplo, un plan de estudios de una carrera), DEBES usar esa información y responder de forma directa y detallada, **sin redirigir al usuario a consultar la web oficial**, a menos que te lo pidan expresamente.
+
+👉 Si el usuario pide el plan de estudios completo de una carrera, y se ha detectado esa carrera con su contexto correspondiente, debes entregarle el contenido directamente, respetando el orden y el formato provisto (años, cuatrimestres, materias, optativas, etc.).
 
 SI LA PREGUNTA NO ESTÁ RELACIONADA CON LA UNNOBA, RESPONDE:
 "Lo siento, solo puedo ayudarte con temas relacionados con la UNNOBA."
-
-Formato de respuesta: 
-- Clara y directa, no des resumenes, siempre respuestas completas. Salvo que el usuario te lo pida.
-- Si hay un enlace oficial, inclúyelo
-- Si se requiere fecha actual, úsala automáticamente
-- No respondas que para buscar información precisa y actualizada vaya a la pagina oficial de la UNNOBA.
 `;
 
 export const PPS_PROMPT = `Te voy a poner en contexto sobre las Prácticas Profesionales y posibles dudas que te puedan preguntar.Resolución CD.ET 258/2015
@@ -138,37 +132,6 @@ El Centro de Estudiantes de la UNNOBA se llama Franja Morada. Es una agrupación
 
 Tienen contacto directo con la comunidad estudiantil y actúan como nexo con la institución.`;
 
-export const PROMPT_INSCRIPCIONES = `
-La inscripción a materias y carreras en la UNNOBA se realiza siguiendo estos pasos:
-
-1. Completar formulario de preinscripción (disponible durante el período habilitado)
-2. Cargar la documentación requerida en PDF en la Mesa de Entrada Virtual
-3. Alternativamente, se puede presentar en forma física en Junín o Pergamino
-4. Recibir confirmación por correo institucional
-
-🔗 Fuente oficial: https://elegi.unnoba.edu.ar/inscripcion/
-Nota: Durante el receso administrativo (21 al 26 de julio), no se procesan inscripciones.`;
-
-
-export const PREGUNTAS_FRECUENTES = [
-  {
-    pregunta: "¿Qué función cumple el centro de estudiantes?",
-    respuesta: "Ayuda e informa sobre inscripción, calendario, distribución de aulas, becas y paros."
-  },
-  {
-    pregunta: "¿Dónde cursan las materias en Junín?",
-    respuesta: "Podés verlo en la distribución de aulas de Junín: https://unnoba.edu.ar/distribucion-aulas/junin"
-  },
-  {
-    pregunta: "¿Cómo conectarse al WiFi institucional?",
-    respuesta: "Podés usar el WiFi público, pero para mejor conexión, ingresá con tu cuenta institucional."
-  },
-  {
-    pregunta: "¿Dónde estudiar o hacer trabajos grupales?",
-    respuesta: "Tenés el Comedor Universitario, el Aula Parlante y otros espacios comunes."
-  }
-];
-
 export const INTERCAMBIO_PROMPT = `
 🔹 CONTEXTO:
 La UNNOBA ofrece programas de intercambio internacional a través de PILA, AUGM y convenios específicos. La duración del intercambio suele ser un semestre (5 meses) y se cursan al menos 3 materias en universidades extranjeras. Los programas están destinados a estudiantes de grado.
@@ -221,6 +184,6 @@ export const API_CONFIG = {
   model: "gemini-1.5-flash",
 };
 
-export const TYPING_SPEED = 75;
+export const TYPING_SPEED = 0.35;
 export const RESPONSE_TYPING_SPEED = 20;
-export const MAX_WORD_COUNT = 1500;
+export const MAX_WORD_COUNT = 2000;
