@@ -6,6 +6,9 @@ import {
   RESPONSE_TYPING_SPEED,
   MAX_WORD_COUNT,
 } from "../utils/constants";
+import { KNOWLEDGE_BASE } from "../utils/knowledgeBase";
+import { findBestMatch } from "../utils/textUtils";
+import { handleClassroomDistributionQuery } from "../utils/classroomDistribution";
 
 export const useChat = () => {
   const [message, setMessage] = useState("");
@@ -111,13 +114,42 @@ export const useChat = () => {
     }
   };
 
-  const hitRequest = () => {
+  const hitRequest = async () => {
     if (!message.trim()) {
       showError("Debes escribir un mensaje");
       return;
     }
     setError(null);
-    generateResponse(message);
+
+    // Primero verificar si es una consulta sobre distribución de aulas
+    const lowerMessage = message.toLowerCase();
+    if (lowerMessage.includes('dónde se cursa') || 
+        lowerMessage.includes('dónde cursar') || 
+        lowerMessage.includes('en qué aula') || 
+        lowerMessage.includes('en qué edificio') ||
+        lowerMessage.includes('distribución de aulas') ||
+        lowerMessage.includes('edificios') ||
+        lowerMessage.includes('ubicación')) {
+      
+      const distributionResponse = await handleClassroomDistributionQuery(message);
+      
+      // Si la respuesta es un objeto, extraemos el mensaje. Si no, la usamos directamente.
+      const responseText = typeof distributionResponse.message === 'string' ? distributionResponse.message : 'No se pudo obtener una respuesta.';
+      
+      addPredefinedResponse(message, responseText);
+      setMessage("");
+      return;
+    }
+
+    // Si no es distribución de aulas, buscar en la base de conocimientos
+    const match = findBestMatch(message, KNOWLEDGE_BASE);
+
+    if (match) {
+      addPredefinedResponse(message, match.response);
+      setMessage("");
+    } else {
+      generateResponse(message);
+    }
   };
 
   const newChat = () => {
