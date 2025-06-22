@@ -343,23 +343,13 @@ export const DISTRIBUCION_AULAS_RESPONSES = {
 export const FINALES_RESPONSES = {
   "¿Cuándo son las mesas de finales?": `📝 **MESAS DE FINALES - UNNOBA**
 
-Las mesas de exámenes finales se organizan en diferentes turnos a lo largo del año:
-
-**📅 Turnos de examen:**
-• **Turno Junio** - Generalmente en junio
-• **Turno Julio-Agosto** - Durante las vacaciones de invierno  
-• **Turno Diciembre** - Al finalizar el 2do cuatrimestre
-• **Turno Febrero-Marzo** - Durante las vacaciones de verano
+Las mesas de exámenes finales están programadas según las fechas establecidas en el calendario académico oficial de la UNNOBA. Generalmente, se realizan durante la segunda semana de cada mes. Sin embargo, es importante tener en cuenta que en los meses de enero y octubre no se habilita la inscripción a mesas de finales. Para conocer las fechas exactas y actualizadas, se recomienda consultar el calendario académico disponible en el sitio web de la universidad.
 
 **📋 Para fechas exactas consultá:**
 • **Calendario académico:** https://elegi.unnoba.edu.ar/calendario/
-• **SIU-Guaraní:** https://g3w3.unnoba.edu.ar/g3w3/
+• **SIU-Guaraní:** https://g3w3.unnoba.edu.ar/g3w3/`,
 
-💡 **Importante:** Las fechas específicas pueden variar según la carrera y se publican en el calendario académico oficial.`,
-
-  "¿Qué es un exámen final?": `📚 **¿QUÉ ES UN EXAMEN FINAL? - UNNOBA**
-
-**Definición:**
+  "¿Qué es un exámen final?": `
 Un examen final es la evaluación que se realiza al concluir el cursado de una materia para acreditar los conocimientos adquiridos y obtener la **aprobación definitiva** de la asignatura.
 
 **📋 Características importantes:**
@@ -399,10 +389,7 @@ Un examen final es la evaluación que se realiza al concluir el cursado de una m
 
 💡 **Recomendación:** Inscribite con anticipación para evitar inconvenientes.`,
 
-  "¿Qué pasa si falto a un final?": `❌ **INASISTENCIA A EXAMEN FINAL - UNNOBA**
-
-**¿Qué consecuencias tiene faltar a un final?**
-
+  "¿Qué pasa si falto a un final?": `
 **📋 Consecuencias:**
 • **Ausente:** Quedarás registrado como "ausente" en el acta
 • **Sin calificación:** No obtenés calificación en esa oportunidad

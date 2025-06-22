@@ -731,6 +731,22 @@ export const useChat = () => {
     // Detección específica para consultas de biblioteca
     const lowerMessage = msg.toLowerCase();
 
+    // Definir meses para uso en todas las detecciones
+    const meses = [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre",
+    ];
+
     // Detección específica para consultas sobre materias de carreras
     const palabrasMateria = [
       "materias",
@@ -897,6 +913,70 @@ export const useChat = () => {
       }
     }
 
+    // Detección específica para consultas de exámenes por mes (DEBE IR ANTES que FINALES_RESPONSES)
+
+    // Palabras clave ampliadas para detectar consultas sobre fechas de exámenes
+    const palabrasExamenes = [
+      "mesa",
+      "examen",
+      "final",
+      "finales",
+      "turno",
+      "fecha",
+      "fechas",
+      "cuando",
+      "cuándo",
+      "día",
+      "dias",
+      "días",
+    ];
+
+    for (const mes of meses) {
+      if (lowerMessage.includes(mes)) {
+        // Verificar si es una consulta sobre fechas de exámenes
+        const esConsultaExamenes = palabrasExamenes.some((palabra) =>
+          lowerMessage.includes(palabra)
+        );
+
+        // También detectar patrones específicos como "finales de julio"
+        const patronFinales = new RegExp(
+          `(finales|final|mesa|examen|turno).*${mes}|${mes}.*(finales|final|mesa|examen|turno|fecha|fechas)`,
+          "i"
+        );
+        const esPatronFinales = patronFinales.test(lowerMessage);
+
+        if (esConsultaExamenes || esPatronFinales) {
+          try {
+            const examenesData = await getContenidoExamenesPorMes(mes);
+            const formattedData = formatUrls(examenesData);
+
+            // Simular efecto de tipeo para la respuesta directa
+            let i = 0;
+            const typingInterval = setInterval(() => {
+              if (i < formattedData.length) {
+                setStreamedResponse(formattedData.substring(0, i + 1));
+                i++;
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+              } else {
+                clearInterval(typingInterval);
+                setMessages((prev) => [
+                  ...prev,
+                  { type: "responseMsg", text: formattedData },
+                ]);
+                setStreamedResponse("");
+                setIsGenerating(false);
+              }
+            }, RESPONSE_TYPING_SPEED);
+
+            return; // Salir temprano, no usar la IA
+          } catch (error) {
+            console.error(`Error obteniendo exámenes de ${mes}:`, error);
+            // Continuar con la IA si hay error en el endpoint específico
+          }
+        }
+      }
+    }
+
     // Detección específica para consultas de finales
     for (const [pregunta, respuesta] of Object.entries(FINALES_RESPONSES)) {
       const preguntaLower = pregunta.toLowerCase();
@@ -934,7 +1014,9 @@ export const useChat = () => {
           (lowerMessage.includes("cuando") ||
             lowerMessage.includes("cuándo") ||
             lowerMessage.includes("mesas") ||
-            lowerMessage.includes("fechas"))
+            lowerMessage.includes("fechas")) &&
+          // NO debe incluir meses específicos
+          !meses.some((mes) => lowerMessage.includes(mes))
         ) {
           esCoincidencia = pregunta === "¿Cuándo son las mesas de finales?";
         } else if (
@@ -1525,60 +1607,6 @@ export const useChat = () => {
           }, RESPONSE_TYPING_SPEED);
 
           return; // Salir temprano, no usar la IA
-        }
-      }
-    }
-
-    // Detección específica para consultas de exámenes por mes
-    const meses = [
-      "enero",
-      "febrero",
-      "marzo",
-      "abril",
-      "mayo",
-      "junio",
-      "julio",
-      "agosto",
-      "septiembre",
-      "octubre",
-      "noviembre",
-      "diciembre",
-    ];
-
-    for (const mes of meses) {
-      if (
-        lowerMessage.includes(mes) &&
-        (lowerMessage.includes("mesa") ||
-          lowerMessage.includes("examen") ||
-          lowerMessage.includes("final") ||
-          lowerMessage.includes("turno"))
-      ) {
-        try {
-          const examenesData = await getContenidoExamenesPorMes(mes);
-          const formattedData = formatUrls(examenesData);
-
-          // Simular efecto de tipeo para la respuesta directa
-          let i = 0;
-          const typingInterval = setInterval(() => {
-            if (i < formattedData.length) {
-              setStreamedResponse(formattedData.substring(0, i + 1));
-              i++;
-              messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-            } else {
-              clearInterval(typingInterval);
-              setMessages((prev) => [
-                ...prev,
-                { type: "responseMsg", text: formattedData },
-              ]);
-              setStreamedResponse("");
-              setIsGenerating(false);
-            }
-          }, RESPONSE_TYPING_SPEED);
-
-          return; // Salir temprano, no usar la IA
-        } catch (error) {
-          console.error(`Error obteniendo exámenes de ${mes}:`, error);
-          // Continuar con la IA si hay error en el endpoint específico
         }
       }
     }

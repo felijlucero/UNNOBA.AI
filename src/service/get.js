@@ -178,11 +178,18 @@ export const getContenidoConfirmacionInscripcion = async () => {
 // Función para obtener información de exámenes por mes específico
 export const getContenidoExamenesPorMes = async (mes) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/examenes-mes/${mes}`);
+    // Primero intentar con el endpoint específico del mes
+    const response = await axios.get(`${API_BASE_URL}/examenes-${mes}`);
     return response.data;
-  } catch (error) {
-    console.error(`Error al obtener exámenes de ${mes}:`, error);
-    throw error;
+  } catch {
+    // Si falla, intentar con el endpoint genérico
+    try {
+      const response = await axios.get(`${API_BASE_URL}/examenes-mes/${mes}`);
+      return response.data;
+    } catch (fallbackError) {
+      console.error(`Error al obtener exámenes de ${mes}:`, fallbackError);
+      throw fallbackError;
+    }
   }
 };
 
