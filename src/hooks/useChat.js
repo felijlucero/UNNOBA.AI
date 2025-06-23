@@ -1,14 +1,22 @@
-import { useState, useRef } from "react";
+ import { useState, useRef } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getContenidoCarrera} from "../service/get";
 import {
+  INTERCAMBIO_PROMPT,
+  PROMPT_CENTRO_ESTUDIANTES,
+  PPS_PROMPT,
   SYSTEM_PROMPT,
   API_CONFIG,
   RESPONSE_TYPING_SPEED,
   MAX_WORD_COUNT,
 } from "../utils/constants";
+<<<<<<< HEAD
 import { KNOWLEDGE_BASE } from "../utils/knowledgeBase";
 import { findBestMatch } from "../utils/textUtils";
 import { handleClassroomDistributionQuery } from "../utils/classroomDistribution";
+=======
+import { text } from "motion/react-client";
+>>>>>>> alejoMartin2001/PrompsIntercambio-PrompsPPS-PrompsPlanesEstudio-PrompsCentroEstudiantes-RealizadosConPeticionesHTTP
 
 export const useChat = () => {
   const [message, setMessage] = useState("");
@@ -36,42 +44,150 @@ export const useChat = () => {
       setError(null);
     }, 2000);
   };
+  
+  const detectarCarrera = async (msgUsuario) => {
+    const model = genAI.current.getGenerativeModel({
+      model: API_CONFIG.model,
+    });
 
-  const generateResponse = async (msg) => {
-    if (!msg) return;
+    const prompt = `
+    Dado este mensaje del usuario:
 
-    setIsGenerating(true);
-    setStreamedResponse("");
+    "${msgUsuario}"
 
-    const updatedMessages = [...messages, { type: "userMsg", text: msg }];
-    setMessages(updatedMessages);
-    setMessage("");
-    setIsResponseScreen(true);
+    Tu tarea es identificar si el usuario está consultando sobre una carrera de la UNNOBA.
 
-    try {
-      if (!chat.current) {
-        const model = genAI.current.getGenerativeModel({
-          model: API_CONFIG.model,
-        });
-        const chatHistory = [
-          {
-            role: "user",
-            parts: [{ text: SYSTEM_PROMPT }],
-          },
-          ...updatedMessages.map((m) => ({
-            role: m.type === "userMsg" ? "user" : "model",
-            parts: [{ text: m.text }],
-          })),
-        ];
-        chat.current = await model.startChat({
-          history: chatHistory,
-        });
-      }
+    👉 Si el usuario menciona una carrera, incluso con un nombre incompleto, con errores o de forma informal, devolvé el nombre completo oficial y SIN ACENTOS tal como aparece en la siguiente lista (sin agregar ningún texto adicional):
+    - analista en sistemas
+    - ingenieria en informatica
+    - ingenieria industrial
+    - ingenieria mecanica
+    - diseño grafico
+    - diseño de indumentaria y textil
+    - diseño industrial
+    - tecnicatura en mantenimiento industrial
+    - licenciatura en sistemas
+    - tecnicatura en diseño y desarrollo de aplicaciones multiplataforma
+    - ingenieria agronomica
+    - licenciatura en genetica
+    - contador publico
+    - licenciatura en administracion
+    - tecnicatura en gestion de pymes
+    - tecnicatura en gestion publica
+    - abogacia
+    - licenciatura en enfermeria
+    - enfermeria universitaria
+
+    ✔️ Por ejemplo:
+    - Si el usuario escribe "quiero saber sobre genética", respondé: **"licenciatura en genetica"**
+    - Si dice "cuánto dura informatica", respondé: **"ingenieria en informatica"**
+    - Si no se refiere a ninguna carrera, respondé exactamente **"ninguna"** (sin comillas).
+
+    Respondé únicamente con el nombre de la carrera, todo en minúsculas, sin tildes ni otros comentarios.
+    `;
+
+
+      const resultado = await model.generateContent(prompt);
+      const carrera = resultado.response.text().toLowerCase().trim();
+      return carrera;
+  };
+
+
+const MAX_ESTIMATED_TOKENS = 30000; // Gemini 1.5 Flash permite hasta ~32k tokens
+
+const estimateTokenLength = (text) => {
+  // Aproximación: 1 token ≈ 0.75 palabras
+  return Math.ceil(text.trim().split(/\s+/).length / 0.75);
+};
+
+const generateResponse = async (msg) => {
+  const mapaCarreras = {
+      "ingenieria en informatica": () => getContenidoCarrera("ingenieria-informatica"),
+      "analista en sistemas": () => getContenidoCarrera("analista-sistemas"),
+      "licenciatura en sistemas": () => getContenidoCarrera("licenciatura-sistemas"),
+      "tecnicatura en diseño y desarrollo de aplicaciones multiplataforma": () => getContenidoCarrera("tecnicatura-diseño-desarrollo-apps"),
+
+      "ingenieria industrial": () => getContenidoCarrera("ingenieria-industrial"),
+      "ingenieria mecanica": () => getContenidoCarrera("ingenieria-mecanica"),
+      "tecnicatura en mantenimiento industrial": () => getContenidoCarrera("mantenimiento-industrial"),
+
+      "abogacia": () => getContenidoCarrera("abogacia"),
+      
+      "contador publico": () => getContenidoCarrera("contador-publico"),
+      "licenciatura en administracion": () => getContenidoCarrera("licenciatura-en-administracion"),
+      "tecnicatura en gestion publica": () => getContenidoCarrera("tecnicatura-gestion-publica"),
+      "tecnicatura en gestion de pymes": () => getContenidoCarrera("tecnicatura-gestion-pymes"),
+      
+      "diseño grafico": () => getContenidoCarrera("diseño-grafico"),
+      "diseño industrial": () => getContenidoCarrera("diseño-industrial"),
+      "diseño de indumentaria y textil": () => getContenidoCarrera("diseño-indumentaria-y-textil"),
+      
+      "ingenieria agronomica": () => getContenidoCarrera("ingenieria-agronomica"),
+
+      "licenciatura en genetica": () => getContenidoCarrera("genetica"),
+      
+      "licenciatura en enfermeria": () => getContenidoCarrera("licenciatura-enfermeria"),
+      "enfermeria universitaria": () => getContenidoCarrera("enfermeria"),
+      };
+
+  if (!msg) return;
+
+  setIsGenerating(true);
+  setStreamedResponse("");
+
+  const updatedMessages = [...messages, { type: "userMsg", text: msg }];
+  setMessages(updatedMessages);
+  setMessage("");
+  setIsResponseScreen(true);
+
+  const carreraDetectada = await detectarCarrera(msg);
+  let contextoCarrera = "";
+
+  if (carreraDetectada !== "ninguna" && mapaCarreras[carreraDetectada]) {
+    contextoCarrera = await mapaCarreras[carreraDetectada]();
+  }
+
+  const model = genAI.current.getGenerativeModel({ model: API_CONFIG.model });
+
+  // Generar historial base
+  const baseSystemPrompt = SYSTEM_PROMPT + PPS_PROMPT + PROMPT_CENTRO_ESTUDIANTES + INTERCAMBIO_PROMPT;
+  const chatHistory = [
+    { role: "user", parts: [{ text: baseSystemPrompt }] },
+    ...updatedMessages.map((m) => ({
+      role: m.type === "userMsg" ? "user" : "model",
+      parts: [{ text: m.text }],
+    })),
+  ];
+
+  // Estimar tokens antes de continuar
+  const totalText = baseSystemPrompt + updatedMessages.map((m) => m.text).join(" ") + contextoCarrera;
+  const estimatedTokens = estimateTokenLength(totalText);
+
+  if (estimatedTokens > MAX_ESTIMATED_TOKENS) {
+    setMessages((prev) => [
+      ...prev,
+      {
+        type: "responseMsg",
+        text: "🚫 Has superado el límite de tokens permitidos en esta sesión. Por favor, presioná *Nuevo Chat* para comenzar una nueva conversación.",
+      },
+    ]);
+    setIsGenerating(false);
+    return;
+  }
+
+  try {
+    // SOLO si `chat.current` no existe, se crea una nueva instancia
+    if (!chat.current) {
+      chat.current = await model.startChat({ history: chatHistory });
+    }
+    if (contextoCarrera) {
+        await chat.current.sendMessage(`Información importante sobre la carrera consultada:\n\n${contextoCarrera}`);
+    }
 
       const result = await chat.current.sendMessage(msg);
       const responseText = result.response.text();
       const wordCount = responseText.trim().split(/\s+/).length;
-
+      
       let fullText =
         wordCount > MAX_WORD_COUNT
           ? "Lo siento, ese último mensaje conlleva una respuesta demasiado larga..."
