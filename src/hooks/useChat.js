@@ -38,7 +38,7 @@ export const useChat = () => {
       setError(null);
     }, 2000);
   };
-
+  
   const detectarCarrera = async (msgUsuario) => {
     const model = genAI.current.getGenerativeModel({
       model: API_CONFIG.model,
@@ -87,19 +87,15 @@ export const useChat = () => {
   };
 
 
-  const generateResponse = async (msg) => {
+const MAX_ESTIMATED_TOKENS = 30000; // Gemini 1.5 Flash permite hasta ~32k tokens
 
-    if (!msg) return;
+const estimateTokenLength = (text) => {
+  // Aproximación: 1 token ≈ 0.75 palabras
+  return Math.ceil(text.trim().split(/\s+/).length / 0.75);
+};
 
-    setIsGenerating(true);
-    setStreamedResponse("");
-
-    const updatedMessages = [...messages, { type: "userMsg", text: msg }];
-    setMessages(updatedMessages);
-    setMessage("");
-    setIsResponseScreen(true);
-
-    const mapaCarreras = {
+const generateResponse = async (msg) => {
+  const mapaCarreras = {
       "ingenieria en informatica": () => getContenidoCarrera("ingenieria-informatica"),
       "analista en sistemas": () => getContenidoCarrera("analista-sistemas"),
       "licenciatura en sistemas": () => getContenidoCarrera("licenciatura-sistemas"),
@@ -128,41 +124,59 @@ export const useChat = () => {
       "enfermeria universitaria": () => getContenidoCarrera("enfermeria"),
       };
 
-    try {
-      const carreraDetectada = await detectarCarrera(msg);
-      let contextoCarrera = "";
+  if (!msg) return;
 
-      if (carreraDetectada !== "ninguna" && mapaCarreras[carreraDetectada]) {
-        contextoCarrera = await mapaCarreras[carreraDetectada]();
-      }
-      // Crear modelo, el if del chat.current no era necesario. cada que vez que se inicia el chat lo que se
-      //le cargue al contexto se elimina.
-      const model = genAI.current.getGenerativeModel({
-        model: API_CONFIG.model,
-      });
+  setIsGenerating(true);
+  setStreamedResponse("");
 
-      // Crear historial con el SYSTEM_PROMPT
-      const chatHistory = [
-        { role: "user", parts: [{ text: SYSTEM_PROMPT+PPS_PROMPT+PROMPT_CENTRO_ESTUDIANTES+INTERCAMBIO_PROMPT}] },
-         ...updatedMessages.map((m) => ({
-            role: m.type === "userMsg" ? "user" : "model",
-            parts: [{ text: m.text }],
-          })),
-      ];
+  const updatedMessages = [...messages, { type: "userMsg", text: msg }];
+  setMessages(updatedMessages);
+  setMessage("");
+  setIsResponseScreen(true);
 
-      // Iniciar el chat con el historial completo
-      chat.current = await model.startChat({
-        history: chatHistory,
-      });
-      
+  const carreraDetectada = await detectarCarrera(msg);
+  let contextoCarrera = "";
 
-      // Inyectar contexto si existe al historial para que lo tenga para futuras respuestas
-      if (contextoCarrera) {
-        chatHistory.push({
-          role: "user",
-          parts: [{ text: `Información importante sobre la carrera consultada:\n\n${contextoCarrera}` }],
-        });
-      }
+  if (carreraDetectada !== "ninguna" && mapaCarreras[carreraDetectada]) {
+    contextoCarrera = await mapaCarreras[carreraDetectada]();
+  }
+
+  const model = genAI.current.getGenerativeModel({ model: API_CONFIG.model });
+
+  // Generar historial base
+  const baseSystemPrompt = SYSTEM_PROMPT + PPS_PROMPT + PROMPT_CENTRO_ESTUDIANTES + INTERCAMBIO_PROMPT;
+  const chatHistory = [
+    { role: "user", parts: [{ text: baseSystemPrompt }] },
+    ...updatedMessages.map((m) => ({
+      role: m.type === "userMsg" ? "user" : "model",
+      parts: [{ text: m.text }],
+    })),
+  ];
+
+  // Estimar tokens antes de continuar
+  const totalText = baseSystemPrompt + updatedMessages.map((m) => m.text).join(" ") + contextoCarrera;
+  const estimatedTokens = estimateTokenLength(totalText);
+
+  if (estimatedTokens > MAX_ESTIMATED_TOKENS) {
+    setMessages((prev) => [
+      ...prev,
+      {
+        type: "responseMsg",
+        text: "🚫 Has superado el límite de tokens permitidos en esta sesión. Por favor, presioná *Nuevo Chat* para comenzar una nueva conversación.",
+      },
+    ]);
+    setIsGenerating(false);
+    return;
+  }
+
+  try {
+    // SOLO si `chat.current` no existe, se crea una nueva instancia
+    if (!chat.current) {
+      chat.current = await model.startChat({ history: chatHistory });
+    }
+    if (contextoCarrera) {
+        await chat.current.sendMessage(`Información importante sobre la carrera consultada:\n\n${contextoCarrera}`);
+    }
 
       const result = await chat.current.sendMessage(msg);
       const responseText = result.response.text();
