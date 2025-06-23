@@ -11,7 +11,7 @@ import {
   MAX_WORD_COUNT,
 } from "../utils/constants";
 import { KNOWLEDGE_BASE } from "../utils/knowledgeBase";
-import { findBestMatch } from "../utils/textUtils";
+import { findBestMatch } from "../utils/textUtils"; //FUNCION QUE ALTERA OTRAS PREGUNTAS
 import { handleClassroomDistributionQuery } from "../utils/classroomDistribution";
 
 export const useChat = () => {
@@ -51,7 +51,7 @@ export const useChat = () => {
 
     "${msgUsuario}"
 
-    Tu tarea es identificar si el usuario está consultando sobre una carrera de la UNNOBA.
+    Tu tarea es identificar si el usuario está consultando sobre una carrera de la UNNOBA. 
 
     👉 Si el usuario menciona una carrera, incluso con un nombre incompleto, con errores o de forma informal, devolvé el nombre completo oficial y SIN ACENTOS tal como aparece en la siguiente lista (sin agregar ningún texto adicional):
     - analista en sistemas
@@ -87,7 +87,7 @@ export const useChat = () => {
       const carrera = resultado.response.text().toLowerCase().trim();
       return carrera;
   };
-
+  
 
 const MAX_ESTIMATED_TOKENS = 30000; // Gemini 1.5 Flash permite hasta ~32k tokens
 
@@ -121,7 +121,7 @@ const generateResponse = async (msg) => {
       "ingenieria agronomica": () => getContenidoCarrera("ingenieria-agronomica"),
 
       "licenciatura en genetica": () => getContenidoCarrera("genetica"),
-      
+      "ingenieria en alimentos": () => getContenidoCarrera("ingenieria-en-alimentos"),
       "licenciatura en enfermeria": () => getContenidoCarrera("licenciatura-enfermeria"),
       "enfermeria universitaria": () => getContenidoCarrera("enfermeria"),
       };
@@ -254,10 +254,11 @@ const generateResponse = async (msg) => {
     }
 
     // Si no es distribución de aulas, buscar en la base de conocimientos
+    const carreraDetectada = await detectarCarrera(message);
     const match = findBestMatch(message, KNOWLEDGE_BASE);
-
-    if (match) {
-      addPredefinedResponse(message, match.response);
+    
+    if (match && carreraDetectada == "ninguna") {
+      addPredefinedResponse(message, match.response);                         
       setMessage("");
     } else {
       generateResponse(message);

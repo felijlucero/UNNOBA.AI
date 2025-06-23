@@ -180,7 +180,7 @@ export const WELCOME_MESSAGE =
   "¡Hola! soy el asistente virtual de la unnoba, ¿En que puedo ayudarte?";
 
 export const API_CONFIG = {
-  apiKey: "AIzaSyC7AN2LSQqJijBR4IpPsp5ZGN_uk-C2UQA",
+  apiKey: "AIzaSyDNgZbrP0QoL-FRwQVVN9MiZkCzotuy-rQ",
   model: "gemini-1.5-flash",
 };
 
