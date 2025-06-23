@@ -25,6 +25,9 @@ import {
   getContenidoDiseñoIndumentaria,
   getContenidoDiseñoIndustrial,
   getContenidoInscripcionMaterias,
+  getContenidoInscripcionMateriasDetallada,
+  getContenidoInscripcionMateriasPrimerCuatrimestre,
+  getContenidoInscripcionMateriasSegundoCuatrimestre,
   getContenidoFeriados,
   getContenidoCalendarioAcademico,
   getContenidoInicioCuatrimestres,
@@ -913,6 +916,128 @@ export const useChat = () => {
       }
     }
 
+    // Detección específica para INSCRIPCIÓN DE MATERIAS (DEBE IR ANTES que finales y exámenes)
+    const palabrasInscripcionMaterias = [
+      "inscripcion",
+      "inscripción",
+      "materias",
+      "materia",
+      "cursada",
+      "cursadas",
+      "asignaturas",
+      "asignatura",
+      "cuatrimestre",
+    ];
+
+    const esConsultaInscripcionMaterias =
+      palabrasInscripcionMaterias.some((palabra) =>
+        lowerMessage.includes(palabra)
+      ) &&
+      (lowerMessage.includes("cuando") ||
+        lowerMessage.includes("cuándo") ||
+        lowerMessage.includes("fecha") ||
+        lowerMessage.includes("fechas") ||
+        lowerMessage.includes("inicio") ||
+        lowerMessage.includes("periodo") ||
+        lowerMessage.includes("período") ||
+        lowerMessage.includes("plazo")) &&
+      (lowerMessage.includes("materia") ||
+        lowerMessage.includes("materias") ||
+        lowerMessage.includes("cursada") ||
+        lowerMessage.includes("cuatrimestre"));
+
+    // Verificar que NO sea sobre finales/exámenes
+    const noEsFinales =
+      !lowerMessage.includes("final") &&
+      !lowerMessage.includes("finales") &&
+      !lowerMessage.includes("examen") &&
+      !lowerMessage.includes("mesa");
+
+    if (esConsultaInscripcionMaterias && noEsFinales) {
+      try {
+        let inscripcionData;
+
+        // Detectar si es una consulta que requiere información detallada
+        const palabrasDetalladas = [
+          "requisito",
+          "requisitos",
+          "regularidad",
+          "regular",
+          "puntos",
+          "como funciona",
+          "cómo funciona",
+          "que necesito",
+          "qué necesito",
+          "condicion",
+          "condición",
+          "correlatividad",
+          "correlatividades",
+          "usuario",
+          "contraseña",
+          "sistema",
+          "guarani",
+          "siu",
+        ];
+
+        const esConsultaDetallada = palabrasDetalladas.some((palabra) =>
+          lowerMessage.includes(palabra)
+        );
+
+        // Detectar si es específicamente sobre primer cuatrimestre
+        if (
+          lowerMessage.includes("primer") &&
+          lowerMessage.includes("cuatrimestre")
+        ) {
+          inscripcionData =
+            await getContenidoInscripcionMateriasPrimerCuatrimestre();
+        }
+        // Detectar si es específicamente sobre segundo cuatrimestre
+        else if (
+          lowerMessage.includes("segundo") &&
+          lowerMessage.includes("cuatrimestre")
+        ) {
+          inscripcionData =
+            await getContenidoInscripcionMateriasSegundoCuatrimestre();
+        }
+        // Si requiere información detallada, usar el endpoint detallado
+        else if (esConsultaDetallada) {
+          inscripcionData = await getContenidoInscripcionMateriasDetallada();
+        }
+        // Si no es específico, usar la respuesta básica
+        else {
+          inscripcionData = await getContenidoInscripcionMaterias();
+        }
+
+        const formattedData = formatUrls(inscripcionData);
+
+        // Simular efecto de tipeo para la respuesta directa
+        let i = 0;
+        const typingInterval = setInterval(() => {
+          if (i < formattedData.length) {
+            setStreamedResponse(formattedData.substring(0, i + 1));
+            i++;
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          } else {
+            clearInterval(typingInterval);
+            setMessages((prev) => [
+              ...prev,
+              { type: "responseMsg", text: formattedData },
+            ]);
+            setStreamedResponse("");
+            setIsGenerating(false);
+          }
+        }, RESPONSE_TYPING_SPEED);
+
+        return; // Salir temprano, no usar la IA
+      } catch (error) {
+        console.error(
+          "Error obteniendo información de inscripción a materias:",
+          error
+        );
+        // Continuar con la IA si hay error en el endpoint específico
+      }
+    }
+
     // Detección específica para consultas de exámenes por mes (DEBE IR ANTES que FINALES_RESPONSES)
 
     // Palabras clave ampliadas para detectar consultas sobre fechas de exámenes
@@ -1611,6 +1736,106 @@ export const useChat = () => {
       }
     }
 
+    // Detección específica para consultas de FERIADOS (MOVER ANTES DEL TRY/CATCH)
+    const palabrasFeriados = [
+      "feriado",
+      "feriados",
+      "dia no laborable",
+      "días no laborables",
+      "día no laborable",
+      "no laborable",
+      "no laborables",
+    ];
+
+    const esConsultaFeriados =
+      palabrasFeriados.some((palabra) => lowerMessage.includes(palabra)) ||
+      ((lowerMessage.includes("cuando") || lowerMessage.includes("cuándo")) &&
+        (lowerMessage.includes("feriado") ||
+          lowerMessage.includes("no laborable")));
+
+    if (esConsultaFeriados) {
+      try {
+        const feriadosData = await getContenidoFeriados();
+        const formattedData = formatUrls(feriadosData);
+
+        // Simular efecto de tipeo para la respuesta directa
+        let i = 0;
+        const typingInterval = setInterval(() => {
+          if (i < formattedData.length) {
+            setStreamedResponse(formattedData.substring(0, i + 1));
+            i++;
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          } else {
+            clearInterval(typingInterval);
+            setMessages((prev) => [
+              ...prev,
+              { type: "responseMsg", text: formattedData },
+            ]);
+            setStreamedResponse("");
+            setIsGenerating(false);
+          }
+        }, RESPONSE_TYPING_SPEED);
+
+        return; // Salir temprano, no usar la IA
+      } catch (error) {
+        console.error("Error obteniendo información de feriados:", error);
+        // Continuar con la IA si hay error en el endpoint específico
+      }
+    }
+
+    // Detección específica para consultas de VACACIONES DE INVIERNO/RECESO INVERNAL (MOVER ANTES DEL TRY/CATCH)
+    const palabrasVacaciones = [
+      "vacaciones",
+      "receso",
+      "invernal",
+      "invierno",
+      "vacaciones de invierno",
+      "receso invernal",
+    ];
+
+    const esConsultaVacaciones =
+      palabrasVacaciones.some((palabra) => lowerMessage.includes(palabra)) &&
+      (lowerMessage.includes("cuando") ||
+        lowerMessage.includes("cuándo") ||
+        lowerMessage.includes("fecha") ||
+        lowerMessage.includes("fechas") ||
+        lowerMessage.includes("son") ||
+        lowerMessage.includes("es"));
+
+    if (esConsultaVacaciones) {
+      try {
+        const vacacionesData = await getContenidoVacacionesInvierno();
+        const formattedData = formatUrls(vacacionesData);
+
+        // Simular efecto de tipeo para la respuesta directa
+        let i = 0;
+        const typingInterval = setInterval(() => {
+          if (i < formattedData.length) {
+            setStreamedResponse(formattedData.substring(0, i + 1));
+            i++;
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          } else {
+            clearInterval(typingInterval);
+            setMessages((prev) => [
+              ...prev,
+              { type: "responseMsg", text: formattedData },
+            ]);
+            setStreamedResponse("");
+            setIsGenerating(false);
+          }
+        }, RESPONSE_TYPING_SPEED);
+
+        return; // Salir temprano, no usar la IA
+      } catch (error) {
+        console.error(
+          "Error obteniendo información de vacaciones de invierno:",
+          error
+        );
+        // Continuar con la IA si hay error en el endpoint específico
+      }
+    }
+
+    // Usar IA como último recurso con respuesta por defecto en caso de error
     try {
       if (!chat.current) {
         const model = genAI.current.getGenerativeModel({
@@ -1671,6 +1896,11 @@ export const useChat = () => {
       const responseText = result.response.text();
       const wordCount = responseText.trim().split(/\s+/).length;
 
+      // Verificar si la respuesta está vacía o es inválida
+      if (!responseText || responseText.trim().length === 0) {
+        throw new Error("Respuesta vacía de la IA");
+      }
+
       let fullText =
         wordCount > MAX_WORD_COUNT
           ? "Lo siento, ese último mensaje conlleva una respuesta demasiado larga..."
@@ -1709,7 +1939,34 @@ export const useChat = () => {
       }, RESPONSE_TYPING_SPEED);
     } catch (error) {
       console.error("Error generating response:", error);
-      setIsGenerating(false);
+
+      // Proporcionar una respuesta por defecto cuando no puede responder
+      const defaultResponse = `Lo siento, no puedo responder ese tipo de consulta específica en este momento. 
+
+Te recomiendo:
+📋 **Consultar el calendario académico oficial:** https://elegi.unnoba.edu.ar/calendario/
+📞 **Contactar directamente a la universidad:** estudiantes@unnoba.edu.ar
+🌐 **Visitar la página oficial:** https://unnoba.edu.ar/
+
+¿Hay algo más en lo que pueda ayudarte con información sobre carreras, inscripciones o servicios universitarios?`;
+
+      // Simular efecto de tipeo para la respuesta por defecto
+      let i = 0;
+      const typingInterval = setInterval(() => {
+        if (i < defaultResponse.length) {
+          setStreamedResponse(defaultResponse.substring(0, i + 1));
+          i++;
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        } else {
+          clearInterval(typingInterval);
+          setMessages((prev) => [
+            ...prev,
+            { type: "responseMsg", text: defaultResponse },
+          ]);
+          setStreamedResponse("");
+          setIsGenerating(false);
+        }
+      }, RESPONSE_TYPING_SPEED);
     }
   };
 

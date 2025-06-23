@@ -88,8 +88,47 @@ export const getContenidoInscripcionMaterias = async () => {
     const response = await axios.get(`${API_BASE_URL}/inscripcion-materias`);
     return response.data;
   } catch (error) {
+    console.error("Error fetching inscripción materias:", error);
+    throw error;
+  }
+};
+
+export const getContenidoInscripcionMateriasDetallada = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/inscripcion-materias-detallada`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching inscripción materias detallada:", error);
+    throw error;
+  }
+};
+
+export const getContenidoInscripcionMateriasPrimerCuatrimestre = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/inscripcion-materias-primer-cuatrimestre`
+    );
+    return response.data;
+  } catch (error) {
     console.error(
-      "Error al obtener información de inscripción a materias:",
+      "Error fetching inscripción materias primer cuatrimestre:",
+      error
+    );
+    throw error;
+  }
+};
+
+export const getContenidoInscripcionMateriasSegundoCuatrimestre = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/inscripcion-materias-segundo-cuatrimestre`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error fetching inscripción materias segundo cuatrimestre:",
       error
     );
     throw error;

@@ -55,7 +55,26 @@ export const formatResponseText = (text) => {
     '<div class="response-highlight"><span class="highlight-icon">$1</span><span class="highlight-text">$2</span></div>'
   );
 
-  // 9. Mejorar el formateo de URLs con mapeo más completo
+  // 9. Primero, procesar enlaces markdown y protegerlos
+  const markdownLinks = [];
+  let markdownIndex = 0;
+
+  // Extraer enlaces markdown y reemplazarlos temporalmente
+  formattedText = formattedText.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    (match, text, url) => {
+      const placeholder = `__MARKDOWN_LINK_${markdownIndex}__`;
+      markdownLinks[markdownIndex] = {
+        text: text,
+        url: url,
+        html: `<a href='${url}' target='_blank' class='response-link'>${text}</a>`,
+      };
+      markdownIndex++;
+      return placeholder;
+    }
+  );
+
+  // 10. Ahora procesar URLs simples (que no están en markdown)
   formattedText = formattedText.replace(
     /(?<!href=['"])(https?:\/\/[^\s<>"]+)(?![^<]*<\/a>)/gi,
     (url) => {
@@ -98,7 +117,13 @@ export const formatResponseText = (text) => {
     }
   );
 
-  // 10. Formatear fechas destacadas (formato ISO o español)
+  // 11. Restaurar los enlaces markdown procesados
+  markdownLinks.forEach((link, index) => {
+    const placeholder = `__MARKDOWN_LINK_${index}__`;
+    formattedText = formattedText.replace(placeholder, link.html);
+  });
+
+  // 12. Formatear fechas destacadas (formato ISO o español)
   formattedText = formattedText.replace(
     /\b(\d{4}-\d{2}-\d{2})\b/g,
     '<span class="response-date">$1</span>'
@@ -109,28 +134,28 @@ export const formatResponseText = (text) => {
     '<span class="response-date">$1</span>'
   );
 
-  // 11. Formatear horarios
+  // 13. Formatear horarios
   formattedText = formattedText.replace(
     /\b(\d{1,2}:\d{2})\s*(hs?|horas?)?\b/gi,
     '<span class="response-time">$1 hs</span>'
   );
 
-  // 12. Crear separadores visuales para secciones
+  // 14. Crear separadores visuales para secciones
   formattedText = formattedText.replace(
     /^[-=]{3,}$/gm,
     '<hr class="response-separator">'
   );
 
-  // 13. Formatear contenido entre líneas vacías como párrafos
+  // 15. Formatear contenido entre líneas vacías como párrafos
   formattedText = formattedText.replace(
     /\n\n+/g,
     '</div><div class="response-paragraph">'
   );
 
-  // 14. Convertir saltos de línea simples a <br>
+  // 16. Convertir saltos de línea simples a <br>
   formattedText = formattedText.replace(/\n/g, "<br>");
 
-  // 15. Envolver todo en un contenedor
+  // 17. Envolver todo en un contenedor
   formattedText = `<div class="response-content">${formattedText}</div>`;
 
   return formattedText;
