@@ -10,13 +10,9 @@ import {
   RESPONSE_TYPING_SPEED,
   MAX_WORD_COUNT,
 } from "../utils/constants";
-<<<<<<< HEAD
 import { KNOWLEDGE_BASE } from "../utils/knowledgeBase";
 import { findBestMatch } from "../utils/textUtils";
 import { handleClassroomDistributionQuery } from "../utils/classroomDistribution";
-=======
-import { text } from "motion/react-client";
->>>>>>> alejoMartin2001/PrompsIntercambio-PrompsPPS-PrompsPlanesEstudio-PrompsCentroEstudiantes-RealizadosConPeticionesHTTP
 
 export const useChat = () => {
   const [message, setMessage] = useState("");
