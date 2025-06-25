@@ -3,7 +3,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getContenidoCarrera} from "../service/get";
 import {
   INTERCAMBIO_PROMPT,
-  promptDetectarSiUserQuiereInfoPlanesDeEstudio,
   PROMPT_CENTRO_ESTUDIANTES,
   PPS_PROMPT,
   SYSTEM_PROMPT,
@@ -43,12 +42,12 @@ export const useChat = () => {
   };
   //REEMPLACE ESTO POR LLAMADA A FUNCION
   //REVEER SI CREANDO OTRA INSTANCIA DEL MODELO PARA DETECTAR UNA CARRERA ES LA MEJOR OPCION
-  /*const detectarCarrera = async (msgUsuario) => {
+  const detectarCarrera = async (msgUsuario) => {
     const model = genAI.current.getGenerativeModel({
       model: API_CONFIG.model,
     });
 
-    const promptDetectarSiUserQuiereInfoPlanesDeEstudio = `
+    const prompt = `
     Dado este mensaje del usuario:
 
     "${msgUsuario}"
@@ -88,7 +87,7 @@ export const useChat = () => {
       const resultado = await model.generateContent(prompt);
       const carrera = resultado.response.text().toLowerCase().trim();
       return carrera;
-  };*/
+  }
   
 
 const MAX_ESTIMATED_TOKENS = 30000; // Gemini 1.5 Flash permite hasta ~32k tokens
@@ -150,8 +149,7 @@ const generateResponse = async (msg) => {
   
   //llamo a carrera detectada, que instancia otro modelo de gemini y le pregunta si en el
   //mensaje el usuario solicita algo relacionado al plan de estudios de alguna carrera de la unnoba.
-  const planDeCarrera = chat.current.sendMessage(promptDetectarSiUserQuiereInfoPlanesDeEstudio);
-  const carreraDetectada = planDeCarrera.response.text().trim();
+  const carreraDetectada = await detectarCarrera(msg);
   let contextoCarrera = ""; //vacio el contexto de carrera
   
   //para poder llevar mejor el conteo de tokens, meto los planes en un arreglo.
@@ -163,8 +161,10 @@ const generateResponse = async (msg) => {
       }
     }
     if(!planCarreraRepetido){
-      setPlanesCarreras([...planesCarreras,contextoCarrera]);//seteo los planes de carrera
-      contextoCarrera = await mapaCarreras[carreraDetectada](); //si se detecto una carrera, almaceno el plan de estudios
+      if (!planCarreraRepetido) {
+        contextoCarrera = await mapaCarreras[carreraDetectada]();
+        setPlanesCarreras([...planesCarreras, contextoCarrera]);
+      }
     }
   }
 
@@ -182,7 +182,8 @@ const generateResponse = async (msg) => {
   ];
 
   // Estimar tokens antes de continuar, si excedo los 30000, le digo al usuario que inicie un nuevo chat.
-  const totalText = baseSystemPrompt + updatedMessages.map((m) => m.text).join(" ") + planesCarreras.map((p) => p.text).join("");
+  const totalText = baseSystemPrompt + 
+  updatedMessages.map((m) => m.text).join(" ") + planesCarreras.join(" ");
   const estimatedTokens = estimateTokenLength(totalText);
   if (estimatedTokens > MAX_ESTIMATED_TOKENS) {
     setMessages((prev) => [
@@ -199,12 +200,18 @@ const generateResponse = async (msg) => {
   try {
     //si chat.current es null es porque inicio un nuevo chat, entonces limipiamos el historial.
     if (!chat.current) {
-      chat.current = await model.startChat({ history: chatHistory });
+      chat.current = model.startChat({ history: chatHistory });
     }
     if (contextoCarrera) {
-        await chat.current.sendMessage(`Información importante sobre la carrera consultada:\n\n${contextoCarrera}`);
-      //habria que añadir un hook de contextos, para que se acuerde..
-      }
+      const infoCarreraMsg = `📚 Información sobre la carrera consultada:\n\n${contextoCarrera}`;
+      setMessages((prev) => [
+        ...prev,
+        { type: "responseMsg", text: infoCarreraMsg },
+      ]);
+      setIsGenerating(false);
+      return;
+    }
+
 
       const result = await chat.current.sendMessage(msg);
       const responseText = result.response.text();
@@ -273,7 +280,6 @@ const generateResponse = async (msg) => {
       
       // Si la respuesta es un objeto, extraemos el mensaje. Si no, la usamos directamente.
       const responseText = typeof distributionResponse.message === 'string' ? distributionResponse.message : 'No se pudo obtener una respuesta.';
-      
       addPredefinedResponse(message, responseText);
       setMessage("");
       return;
@@ -286,6 +292,7 @@ const generateResponse = async (msg) => {
     if (match && carreraDetectada == "ninguna") {
       addPredefinedResponse(message, match.response);                         
       setMessage("");
+      return;
     } else {
       generateResponse(message); //sino la genera a la respuesta
     }

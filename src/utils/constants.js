@@ -164,41 +164,6 @@ Q: ¿Dónde me inscribo?
 A: Completando este formulario: [URL DINÁMICO]
 `;
 
-export const promptDetectarSiUserQuiereInfoPlanesDeEstudio = `
-    Dado el mensaje del usuario:
-
-    Tu tarea es identificar si el usuario está consultando sobre el plan de estudio de una carrera de la UNNOBA o sobre información que se encuentre en el plan de estudios.  
-
-    👉 Si el usuario menciona una carrera, incluso con un nombre incompleto, con errores o de forma informal, devolvé el nombre completo oficial y SIN ACENTOS tal como aparece en la siguiente lista (sin agregar ningún texto adicional):
-    - analista en sistemas
-    - ingenieria en informatica
-    - ingenieria industrial
-    - ingenieria mecanica
-    - diseño grafico
-    - diseño de indumentaria y textil
-    - diseño industrial
-    - tecnicatura en mantenimiento industrial
-    - licenciatura en sistemas
-    - tecnicatura en diseño y desarrollo de aplicaciones multiplataforma
-    - ingenieria agronomica
-    - licenciatura en genetica
-    - contador publico
-    - licenciatura en administracion
-    - tecnicatura en gestion de pymes
-    - tecnicatura en gestion publica
-    - abogacia
-    - licenciatura en enfermeria
-    - enfermeria universitaria
-
-    ✔️ Por ejemplo:
-    - Si el usuario escribe "quiero saber sobre genética", respondé: **"licenciatura en genetica"**
-    - Si dice "cuánto dura informatica", respondé: **"ingenieria en informatica"**
-    - Si no se refiere a ninguna carrera, respondé exactamente **"ninguna"** (sin comillas).
-
-    Respondé únicamente con el nombre de la carrera, todo en minúsculas, sin tildes ni otros comentarios.
-    `;
-
-
 export const PREDEFINED_RESPONSES = {
   "¿Dónde puedo contactar a la universidad o cuáles son sus redes sociales?":
     "<strong style='color: #007bbf;'>Redes de la Universidad</strong><br />Instagram: @elegiunnoba o @unnobanoticias<br />Facebook: NoticiasUNNOBA<br />Web: www.unnoba.edu.ar<br /><br /><strong style='color:rgb(150, 0, 137);'>Centro de estudiantes</strong><br />Vía Instagram:<br />Franja Morada Junín: @franjaunnobajunin<br />Franja Morada Pergamino: @franjamoradaunnoba<br /><br /><strong style='color:gray;'>Contactos institucionales📧</strong><br /> estudiantes@unnoba.edu.ar<br />También podés acercarte a Bienestar Estudiantil en tu sede.",
