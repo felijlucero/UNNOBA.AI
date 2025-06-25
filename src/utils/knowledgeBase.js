@@ -83,15 +83,25 @@ export const KNOWLEDGE_BASE = {
 
   // --- PLAN DE ESTUDIOS ---
   "¿Dónde puedo ver mi plan de estudios?": "Podés consultar el plan de estudios de tu carrera en el sitio web oficial de la UNNOBA, en la sección de tu Escuela o Instituto:" + PLAN_ESTUDIOS_LINKS,
-  "¿Cuántos años dura la carrera?": "La duración varía: las tecnicaturas duran aproximadamente 2.5 años, las licenciaturas 4 años y las ingenierías 5 años. Para conocer la duración específica, consultá tu plan de estudios.",
-  "¿Qué materias tiene mi carrera?": "Las materias por año están detalladas en tu plan de estudios. Podés encontrarlo en la web de tu Escuela o Instituto:" + PLAN_ESTUDIOS_LINKS,
-  
+  //"¿Cuántos años dura la carrera?": "La duración varía: las tecnicaturas duran aproximadamente 2.5 años, las licenciaturas 4 años y las ingenierías 5 años. Para conocer la duración específica, consultá tu plan de estudios.",
+  //"¿Qué materias tiene mi carrera?": "Las materias por año están detalladas en tu plan de estudios. Podés encontrarlo en la web de tu Escuela o Instituto:" + PLAN_ESTUDIOS_LINKS,
+  "¿Cada cuanto vencen los planes de estudio?":"En la UNNOBA, los planes de estudio no tienen una fecha fija de vencimiento, pero pueden ser actualizados o reemplazados por nuevos planes conforme a las resoluciones del Consejo Superior o del Ministerio de Educación.Cuando un plan de estudio es reemplazado, la universidad suele establecer un plazo de convivencia (por ejemplo, 3 o 5 años) para que los estudiantes que estaban cursando bajo el plan anterior puedan finalizar su carrera o hacer el traspaso al nuevo plan.",
+  "¿Que información te brindan los planes de estudios?":"📘 Un plan de estudios en la UNNOBA incluye:<ul>Duración de la carrera (en años y/o en cantidad de materias o créditos).</ul>Materias obligatorias y optativas, con su distribución por año o semestre.<ul>Carga horaria total y semanal.</ul><ul>Correlatividades entre materias (cuáles deben aprobarse antes de cursar otras).</ul><ul>Alcances del título (perfil profesional, competencias, incumbencias).</ul><ul>Posibles itinerarios de formación, pasantías, prácticas o trabajos finales requeridos.</ul>",
+
   // --- CENTRO DE ESTUDIANTES ---
   "¿Qué es el Centro de Estudiantes?": "Es un organismo formado por estudiantes que representa y defiende los derechos e intereses del alumnado. Organiza actividades y funciona como un espacio de participación.",
-  
+  "¿Cual es la función del centro de estudiantes?":"Brindar información y acompañamiento sobre <ul>- Inscripciones a materias y finales<ul><ul>- Calendario académico actualizado</ul><ul>- Distribución semanal de aulas (links incluidos)</ul><ul>- Becas disponibles y cómo postularse</ul><ul>- Cambios de carrera, plan o equivalencias</ul><ul>- Paros, comunicados y novedades institucionales,</ul>",
+
+
   // --- INTERCAMBIO ESTUDIANTIL ---
   "¿Qué es el programa de intercambio estudiantil?": "La UNNOBA ofrece programas para cursar un semestre en universidades extranjeras, garantizando el reconocimiento académico. Algunos programas son PILA, ESCALA, JIMA, MACA y PAME-UDUAL.",
-  
+  "¿Qué universidades están disponibles para los intercambios?" : "Algunas opciones incluyen universidades en Brasil, Uruguay, Chile, Paraguay, México, etc.",
+  "¿Cuánto dura el intercambio?" : "Dura un semestre académico (aproximadamente 5 meses).",
+  "¿La universidad cubre los gastos del intercambio?" : "La universidad anfitriona suele cubrir hospedaje y comida, pero el estudiante paga pasajes, seguro y visa.",
+  "¿Dónde me inscribo para el intercambio?":" Para inscribirte: <a href=https://docs.google.com/forms/d/e/1FAIpQLSfDdIRnTnFDyds-04XMedFVjdaRM2G0O_RCt13XzzPTPTxKow/viewform target=_blank>Toca para inscribirte</a>",
+
+
+
   // --- PRÁCTICA PROFESIONAL SUPERVISADA (PPS) ---
   "¿Qué es la Práctica Profesional Supervisada?": "La PPS es una instancia formativa obligatoria en algunas carreras que te permite realizar actividades profesionales en un entorno real de trabajo.",
   

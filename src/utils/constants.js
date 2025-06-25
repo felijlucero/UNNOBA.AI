@@ -1,4 +1,4 @@
-
+//¿juntamos estas 4 en un unico contexto? ¿Se podria meter el de la PPS centro de estudiantes y el del intercambio en el js de feli?
 export const SYSTEM_PROMPT = `
 Eres un chatbot especializado en brindar información detallada y concreta sobre la Universidad Nacional del Noroeste de la Provincia de Buenos Aires (UNNOBA). Estás diseñado para responder con precisión sobre:
 
@@ -163,6 +163,40 @@ A: La universidad anfitriona suele cubrir hospedaje y comida, pero el estudiante
 Q: ¿Dónde me inscribo?
 A: Completando este formulario: [URL DINÁMICO]
 `;
+
+export const promptDetectarSiUserQuiereInfoPlanesDeEstudio = `
+    Dado el mensaje del usuario:
+
+    Tu tarea es identificar si el usuario está consultando sobre el plan de estudio de una carrera de la UNNOBA o sobre información que se encuentre en el plan de estudios.  
+
+    👉 Si el usuario menciona una carrera, incluso con un nombre incompleto, con errores o de forma informal, devolvé el nombre completo oficial y SIN ACENTOS tal como aparece en la siguiente lista (sin agregar ningún texto adicional):
+    - analista en sistemas
+    - ingenieria en informatica
+    - ingenieria industrial
+    - ingenieria mecanica
+    - diseño grafico
+    - diseño de indumentaria y textil
+    - diseño industrial
+    - tecnicatura en mantenimiento industrial
+    - licenciatura en sistemas
+    - tecnicatura en diseño y desarrollo de aplicaciones multiplataforma
+    - ingenieria agronomica
+    - licenciatura en genetica
+    - contador publico
+    - licenciatura en administracion
+    - tecnicatura en gestion de pymes
+    - tecnicatura en gestion publica
+    - abogacia
+    - licenciatura en enfermeria
+    - enfermeria universitaria
+
+    ✔️ Por ejemplo:
+    - Si el usuario escribe "quiero saber sobre genética", respondé: **"licenciatura en genetica"**
+    - Si dice "cuánto dura informatica", respondé: **"ingenieria en informatica"**
+    - Si no se refiere a ninguna carrera, respondé exactamente **"ninguna"** (sin comillas).
+
+    Respondé únicamente con el nombre de la carrera, todo en minúsculas, sin tildes ni otros comentarios.
+    `;
 
 
 export const PREDEFINED_RESPONSES = {
