@@ -5,3 +5,4 @@ package-locked.json
 .env
 dist/
 .DS_Store
+*.json

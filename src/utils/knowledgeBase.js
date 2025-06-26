@@ -3,6 +3,10 @@ const CALENDAR_ANSWER = `Toda la información sobre fechas la encontrarás en el
 const REGULARITY_ANSWER =
   "Para poder inscribirte a materias es necesario tener la condición de <strong>alumno regular</strong>.<br/><br/><strong>¿Cuándo y cómo se verifica?</strong><br/>La regularidad se verifica a fines de marzo de cada año. Por ejemplo, la regularidad 2025 se evalúa considerando el período entre marzo de 2024 y marzo de 2025. Para mantenerla, necesitás sumar al menos <strong>4 puntos</strong> en ese período.<br/><br/><strong>¿Cómo se suman puntos?</strong><br/>Podés sumar puntos de las siguientes maneras:<br/><ul><li>Cada materia cursada y aprobada: <strong>1 punto</strong>.</li><li>Cada examen final aprobado: <strong>2 puntos</strong>.</li></ul>Se pueden combinar cursadas y finales. Por ejemplo: 4 cursadas aprobadas (4 pts), o 2 cursadas (2 pts) y 1 final (2 pts), o 2 finales (4 pts).<br/><br/><strong>¿Qué pasa si no llego a los 4 puntos?</strong><br/>Perdés la condición de alumno regular. Sin embargo, podés seguir cursando si te <strong>reinscribís</strong> a la carrera, manteniendo todo lo que ya aprobaste.<br/><br/><strong>¿Cuántas veces puedo reinscribirme?</strong><br/>Podés reinscribirte hasta <strong>3 veces</strong>. Si superás ese límite, perdés todas las materias aprobadas y debés empezar la carrera desde cero.";
 
+const CORRELATIVITY_ANSWER = "Las materias correlativas son aquellas que requieren haber aprobado otras materias previamente. No podés cursar una materia si no tenés aprobada la cursada de su correlativa, y no podés rendir el final si no tenés aprobado el final de su correlativa.";
+
+const REVALIDA_ANSWER = "Una reválida es una prórroga que te otorga un año adicional para rendir el final de una materia cuya regularidad haya vencido. En algunas materias, para obtener la reválida debés rendir una evaluación interna. Si no la solicitás o no aprobás, deberás recursar la materia.";
+
 const PLAN_ESTUDIOS_LINKS = `<br/><a href='https://www.unnoba.edu.ar/tecnologia/' target='_blank' style='color:#005B96; font-weight:bold;'>Escuela de Tecnología</a><br/><a href='https://www.unnoba.edu.ar/can/' target='_blank' style='color:#005B96; font-weight:bold;'>Escuela de Ciencias Agrarias, Naturales y Ambientales</a><br/><a href='https://www.unnoba.edu.ar/economicas-y-juridicas/' target='_blank' style='color:#005B96; font-weight:bold;'>Escuela de Ciencias Económicas y Jurídicas</a><br/><a href='https://www.unnoba.edu.ar/desarrollo-humano/' target='_blank' style='color:#005B96; font-weight:bold;'>Instituto Académico de Desarrollo Humano</a>`;
 
 export const KNOWLEDGE_BASE = {
@@ -35,9 +39,11 @@ export const KNOWLEDGE_BASE = {
   "¿Puedo rendir un final libre?": "Depende de la materia, pero en general, la mayoría no permite rendir en condición de 'libre'. Deberías consultarlo con el profesor titular (Jefe de Cátedra) de la materia.",
   
   // --- CORRELATIVIDADES Y REVÁLIDAS ---
-  "¿Qué son las materias correlativas?": "Las materias correlativas son aquellas que requieren haber aprobado otras materias previamente. No podés cursar una materia si no tenés aprobada la cursada de su correlativa, y no podés rendir el final si no tenés aprobado el final de su correlativa.",
+  "¿Qué son las materias correlativas?": CORRELATIVITY_ANSWER,
+  "¿Qué es una correlativa?": CORRELATIVITY_ANSWER,
   "¿Dónde reviso las correlativas?": "Podés consultar las correlativas en el plan de estudios de tu carrera o en <a href='https://g3w3.unnoba.edu.ar/g3w3/' target='_blank' style='color:#005B96; font-weight:bold;'>SIU-Guaraní</a>, entrando a: <strong>Reportes → Plan de Estudios</strong>.",
-  "¿Qué son las reválidas?": "Una reválida es una prórroga que te otorga un año adicional para rendir el final de una materia cuya regularidad haya vencido. En algunas materias, para obtener la reválida debés rendir una evaluación interna. Si no la solicitás o no aprobás, deberás recursar la materia.",
+  "¿Qué son las reválidas?": REVALIDA_ANSWER,
+  "que es una revalida" : REVALIDA_ANSWER,
   "¿Cómo solicito una reválida?": "La inscripción a una reválida se realiza igual que la de un examen final regular, a través de <a href='https://g3w3.unnoba.edu.ar/g3w3/' target='_blank' style='color:#005B96; font-weight:bold;'>SIU-Guaraní</a>, durante el período habilitado.",
   
   // --- INSCRIPCIÓN A MATERIAS ---
