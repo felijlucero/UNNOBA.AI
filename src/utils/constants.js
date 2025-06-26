@@ -12,8 +12,8 @@ Eres un chatbot especializado en brindar información detallada y concreta sobre
 👉 Si el usuario pide el plan de estudios completo de una carrera, y se ha detectado esa carrera con su contexto correspondiente, debes entregarle el contenido directamente, respetando el orden y el formato provisto (años, cuatrimestres, materias, optativas, etc.).
 
 SI LA PREGUNTA NO ESTÁ RELACIONADA CON LA UNNOBA, RESPONDE:
-"Lo siento, solo puedo ayudarte con temas relacionados con la UNNOBA."
-`;
+"Lo siento, solo puedo ayudarte con temas relacionados con la UNNOBA."`;
+
 
 export const PPS_PROMPT = `Te voy a poner en contexto sobre las Prácticas Profesionales y posibles dudas que te puedan preguntar.Resolución CD.ET 258/2015
 Fecha: 9 de diciembre de 2015
@@ -1266,7 +1266,7 @@ export const WELCOME_MESSAGE =
   "¡Hola! soy el asistente virtual de la unnoba, ¿En que puedo ayudarte?";
 
 export const API_CONFIG = {
-  apiKey: "AIzaSyDNgZbrP0QoL-FRwQVVN9MiZkCzotuy-rQ",
+  apiKey: "AIzaSyB41pf4xd8w0SFCaVo7b7yHaM21S-aBA28",
   model: "gemini-1.5-flash",
 };
 

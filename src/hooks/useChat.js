@@ -1,18 +1,19 @@
 import { useState, useRef } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getContenidoCarrera} from "../service/get";
+import { getContenidoCarrera } from "../service/get";
+import { formatPlanEstudios } from "/src/utils/formatPlanEstudios.js";
 import {
-  getContenidoIngInformatica,
+  /*getContenidoIngInformatica,
   getContenidoLicSistemas,
   getContenidoAnalistSistemas,
   getContenidoEnfermeria,
   getContenidoGenetica,
   getContenidoAbogacia,
   getContenidoContadorPublico,
-  getContenidoAgronomia,
-  getContenidoDistribucionAulas,
+  getContenidoAgronomia,*/
+  //getContenidoDistribucionAulas,
   getContenidoExamenesPorMes,
-  getContenidoTecnicaturaDiseñoDesarrollo,
+  /*getContenidoTecnicaturaDiseñoDesarrollo,
   getContenidoIngenieriaIndustrial,
   getContenidoIngenieriaMecanica,
   getContenidoTecnicaturaMantenimiento,
@@ -23,7 +24,7 @@ import {
   getContenidoTecnicaturaProduccionAlimentos,
   getContenidoDiseñoGrafico,
   getContenidoDiseñoIndumentaria,
-  getContenidoDiseñoIndustrial,
+  getContenidoDiseñoIndustrial,*/
   getContenidoInscripcionMaterias,
   getContenidoInscripcionMateriasDetallada,
   getContenidoInscripcionMateriasPrimerCuatrimestre,
@@ -37,6 +38,7 @@ import {
   getContenidoConfirmacionInscripcion,
 } from "../service/get";
 import { formatUrls } from "../utils/formatters";
+import { limpiarPlanEstudios } from "../utils/recortePlanEstudios";
 import {
   INTERCAMBIO_PROMPT,
   PROMPT_CENTRO_ESTUDIANTES,
@@ -705,7 +707,8 @@ export const useChat = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [streamedResponse, setStreamedResponse] = useState("");
   const [error, setError] = useState(null);
-  const [planesCarreras, setPlanesCarreras] = useState([]);//hook que almacena los planes de estudio.
+  const [planesCarreras, setPlanesCarreras] = useState([]); //hook que almacena los planes de estudio.
+  const [informacionUnnoba, setInformacionUnnoba] = useState([]);
 
   const pausarUnnobaAi = useRef(false);
   const saltosDeLinea = useRef(false);
@@ -724,6 +727,31 @@ export const useChat = () => {
       setError(null);
     }, 2000);
   };
+
+  const detectarTipoContextoUnnoba = async (msg) => {
+    const model = genAI.current.getGenerativeModel({
+      model: API_CONFIG.model,
+    });
+
+    const prompt = `Si el mensaje del usuario: ${msg}
+    esta relacionado a que necesita información sobre:
+    inscripciones de materias, sobre el calendario academico, sobre inicio 
+    del cuatrimestre, sobre el fin del cuatrimestre, sobre examenes finales, 
+    vacaciones de invierno o confirmaciones de inscripciones. Vas a responder así 
+    dependiendo a que información se refiere el usuario (sin el -):
+    -incripciones materias
+    -calendario academico
+    -inicio cuatrimestre
+    -fin cuatrimestre
+    -examenes finales
+    -vacaciones invierno
+    -confirmacion inscripciones
+    `
+    const resultado = await model.generateContent(prompt);
+    const infoContext = resultado.response.text().toLowerCase().trim();
+    return infoContext;
+  };
+
   //REEMPLACE ESTO POR LLAMADA A FUNCION
   //REVEER SI CREANDO OTRA INSTANCIA DEL MODELO PARA DETECTAR UNA CARRERA ES LA MEJOR OPCION
   const detectarCarrera = async (msgUsuario) => {
@@ -767,12 +795,10 @@ export const useChat = () => {
     Respondé únicamente con el nombre de la carrera, todo en minúsculas, sin tildes ni otros comentarios.
     `;
 
-
-      const resultado = await model.generateContent(prompt);
-      const carrera = resultado.response.text().toLowerCase().trim();
-      return carrera;
-  }
-  
+    const resultado = await model.generateContent(prompt);
+    const carrera = resultado.response.text().toLowerCase().trim();
+    return carrera;
+  };
 
   const MAX_ESTIMATED_TOKENS = 30000; // Gemini 1.5 Flash permite hasta ~32k tokens
   //calcula los tokens del texto
@@ -781,67 +807,79 @@ export const useChat = () => {
     return Math.ceil(text.trim().split(/\s+/).length / 0.75);
   };
 
-//Funcion que genera una respuesta sin sesion del chat (Sin historial predefinido)
-const generateResponse = async (msg) => {
-  //defino el objeto mapa carreras, que tiene el nombre
-  //de las carreras disponibles en la unnoba como claves y como valor: una llamada a una
-  //funcion que hace una solicitud HTTP al plan de estudios de es carrera.
-  const mapaCarreras = {
-      "ingenieria en informatica": () => getContenidoCarrera("ingenieria-informatica"),
+  //Funcion que genera una respuesta sin sesion del chat (Sin historial predefinido)
+  const generateResponse = async (msg) => {
+    //defino el objeto mapa carreras, que tiene el nombre
+    //de las carreras disponibles en la unnoba como claves y como valor: una llamada a una
+    //funcion que hace una solicitud HTTP al plan de estudios de es carrera.
+    const mapaCarreras = {
+      "ingenieria en informatica": () =>
+        getContenidoCarrera("ingenieria-informatica"),
       "analista en sistemas": () => getContenidoCarrera("analista-sistemas"),
-      "licenciatura en sistemas": () => getContenidoCarrera("licenciatura-sistemas"),
-      "tecnicatura en diseño y desarrollo de aplicaciones multiplataforma": () => getContenidoCarrera("tecnicatura-diseño-desarrollo-apps"),
+      "licenciatura en sistemas": () =>
+        getContenidoCarrera("licenciatura-sistemas"),
+      "tecnicatura en diseño y desarrollo de aplicaciones multiplataforma":
+        () => getContenidoCarrera("tecnicatura-diseño-desarrollo-aplicaciones-multiplataforma"),
 
-      "ingenieria industrial": () => getContenidoCarrera("ingenieria-industrial"),
+      "ingenieria industrial": () =>
+        getContenidoCarrera("ingenieria-industrial"),
       "ingenieria mecanica": () => getContenidoCarrera("ingenieria-mecanica"),
-      "tecnicatura en mantenimiento industrial": () => getContenidoCarrera("mantenimiento-industrial"),
+      "tecnicatura en mantenimiento industrial": () =>
+        getContenidoCarrera("tecnicatura-mantenimiento-industrial"),
 
-      "abogacia": () => getContenidoCarrera("abogacia"),
-      
+      abogacia: () => getContenidoCarrera("abogacia"),
+
       "contador publico": () => getContenidoCarrera("contador-publico"),
-      "licenciatura en administracion": () => getContenidoCarrera("licenciatura-en-administracion"),
-      "tecnicatura en gestion publica": () => getContenidoCarrera("tecnicatura-gestion-publica"),
-      "tecnicatura en gestion de pymes": () => getContenidoCarrera("tecnicatura-gestion-pymes"),
-      
+      "licenciatura en administracion": () =>
+        getContenidoCarrera("licenciatura-administracion"),
+      "tecnicatura en gestion publica": () =>
+        getContenidoCarrera("tecnicatura-gestion-publica"),
+      "tecnicatura en gestion de pymes": () =>
+        getContenidoCarrera("tecnicatura-gestion-pymes"),
+
       "diseño grafico": () => getContenidoCarrera("diseño-grafico"),
       "diseño industrial": () => getContenidoCarrera("diseño-industrial"),
-      "diseño de indumentaria y textil": () => getContenidoCarrera("diseño-indumentaria-y-textil"),
-      
-      "ingenieria agronomica": () => getContenidoCarrera("ingenieria-agronomica"),
+      "diseño de indumentaria y textil": () =>
+        getContenidoCarrera("diseño-indumentaria-y-textil"),
+
+      "ingenieria agronomica": () =>
+        getContenidoCarrera("agronomia"),
 
       "licenciatura en genetica": () => getContenidoCarrera("genetica"),
-      "ingenieria en alimentos": () => getContenidoCarrera("ingenieria-en-alimentos"),
-      "licenciatura en enfermeria": () => getContenidoCarrera("licenciatura-enfermeria"),
+      "ingenieria en alimentos": () =>
+        getContenidoCarrera("ingenieria-alimentos"),
+      /*"licenciatura en enfermeria": () =>
+        getContenidoCarrera("licenciatura-enfermeria"),*/
       "enfermeria universitaria": () => getContenidoCarrera("enfermeria"),
-      };
+    };
 
-  //Si el mensaje es vacio, termina la ejecucion y no procesa nada Gemini
-  if (!msg) return;
+    const mapaInformacionGeneral = {
+    "inscripcion a materias": () => getContenidoInscripcionMaterias(),
+    "feriados": () => getContenidoFeriados(),
+    "calendario academico": () => getContenidoCalendarioAcademico(),
+    "inicio de cuatrimestres": () => getContenidoInicioCuatrimestres(),
+    "fin de cuatrimestres": () => getContenidoFinCuatrimestres(),
+    "examenes finales": () => getContenidoExamenesFinales(),
+    "vacaciones de invierno": () => getContenidoVacacionesInvierno(),
+    "confirmacion de inscripcion": () => getContenidoConfirmacionInscripcion(),
+    };
 
-  //hook que indica que Gemini va a generar una respuesta es true
-  setIsGenerating(true);
-  //la respuesta transmitida se vacia, porque se va a generar una nueva.    
-  setStreamedResponse("");
-  //se actualizan los mensajes de la "sesion", no seria let en vez de const?
-  const updatedMessages = [...messages, { type: "userMsg", text: msg }];
-  //los cargamos al hook
-  setMessages(updatedMessages);
-  //vacio el que guarda de a un mensaje
-  setMessage("");
-  //Captura de respuesta true.
-  setIsResponseScreen(true);
-  
-  //llamo a carrera detectada, que instancia otro modelo de gemini y le pregunta si en el
-  //mensaje el usuario solicita algo relacionado al plan de estudios de alguna carrera de la unnoba.
-  const carreraDetectada = await detectarCarrera(msg);
-  let contextoCarrera = ""; //vacio el contexto de carrera
-  
-  //para poder llevar mejor el conteo de tokens, meto los planes en un arreglo.
-  let planCarreraRepetido = false;
-  if (carreraDetectada !== "ninguna" && mapaCarreras[carreraDetectada]) {
-    for (let plan=0; plan < planesCarreras.length; plan++){
-      if(carreraDetectada == planesCarreras[plan]){
-        planCarreraRepetido = true;
+    //Si el mensaje es vacio, termina la ejecucion y no procesa nada Gemini
+    if (!msg) return;
+
+    //hook que indica que Gemini va a generar una respuesta es true
+    setIsGenerating(true);
+    //la respuesta transmitida se vacia, porque se va a generar una nueva.
+    setStreamedResponse("");
+    //se actualizan los mensajes de la "sesion", no seria let en vez de const?
+    const updatedMessages = [...messages, { type: "userMsg", text: msg }];
+    //los cargamos al hook
+    setMessages(updatedMessages);
+    //vacio el que guarda de a un mensaje
+    setMessage("");
+    //Captura de respuesta true.
+    setIsResponseScreen(true);
+
     // Detección específica para consultas de biblioteca
     const lowerMessage = msg.toLowerCase();
 
@@ -860,7 +898,7 @@ const generateResponse = async (msg) => {
       "noviembre",
       "diciembre",
     ];
-    
+
     // Detección específica para consultas sobre materias de carreras
     const palabrasMateria = [
       "materias",
@@ -1390,7 +1428,7 @@ const generateResponse = async (msg) => {
     }
 
     // Detección específica para consultas de distribución de aulas
-    for (const [, respuesta] of Object.entries(DISTRIBUCION_AULAS_RESPONSES)) {
+    /*for (const [, respuesta] of Object.entries(DISTRIBUCION_AULAS_RESPONSES)) {
       const palabrasClaveAulas = [
         "distribucion",
         "distribución",
@@ -1486,8 +1524,8 @@ const generateResponse = async (msg) => {
 
         return; // Salir temprano, no usar la IA
       }
-    }
-
+    }*/
+    
     // Detección específica para consultas de TESIS
     for (const [pregunta, respuesta] of Object.entries(TESIS_RESPONSES)) {
       const preguntaLower = pregunta.toLowerCase();
@@ -1946,75 +1984,101 @@ const generateResponse = async (msg) => {
       }
     }
 
-    // Usar IA como último recurso con respuesta por defecto en caso de error
-    try {
-      if (!chat.current) {
-        const model = genAI.current.getGenerativeModel({
-          model: API_CONFIG.model,
-        });
-        //const PROMPT_INGINFORMATICA = await getContenidoIngInformatica();
-        //const PROMPT_ANALISTASISTEMAS = await getContenidoAnalistSistemas();
-        //const PROMPT_LICSISTEMAS = await getContenidoLicSistemas();
-        //const PROMPT_ENFERMERIA = await getContenidoEnfermeria();
-        //const PROMPT_GENETICA = await getContenidoGenetica();
-        const PROMPT_INSCRIPCION_MATERIAS_DINAMICO =
-          await getContenidoInscripcionMaterias();
-        const PROMPT_FERIADOS_DINAMICO = await getContenidoFeriados();
-        const PROMPT_CALENDARIO_DINAMICO =
-          await getContenidoCalendarioAcademico();
-        const PROMPT_INICIO_CUATRIMESTRES =
-          await getContenidoInicioCuatrimestres();
-        const PROMPT_FIN_CUATRIMESTRES = await getContenidoFinCuatrimestres();
-        const PROMPT_EXAMENES_FINALES = await getContenidoExamenesFinales();
-        const PROMPT_VACACIONES_INVIERNO =
-          await getContenidoVacacionesInvierno();
-        const PROMPT_CONFIRMACION_INSCRIPCION =
-          await getContenidoConfirmacionInscripcion();
-        const chatHistory = [
-          { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
-          //{ role: "user", parts: [{ text: PROMPT_INGINFORMATICA }] },
-          //{ role: "user", parts: [{ text: PROMPT_ANALISTASISTEMAS }] },
-          //{ role: "user", parts: [{ text: PROMPT_LICSISTEMAS }] },
-          { role: "user", parts: [{ text: PPS_PROMPT }] },
-          //{ role: "user", parts: [{ text: PROMPT_GENETICA }] },
-          //{ role: "user", parts: [{ text: PROMPT_ENFERMERIA }] },
-          { role: "user", parts: [{ text: PROMPT_INSCRIPCION_MATERIAS }] },
-          {
-            role: "user",
-            parts: [{ text: PROMPT_INSCRIPCION_MATERIAS_DINAMICO }],
-          },
-          { role: "user", parts: [{ text: PROMPT_FERIADOS_DINAMICO }] },
-          { role: "user", parts: [{ text: PROMPT_CALENDARIO_DINAMICO }] },
-          { role: "user", parts: [{ text: PROMPT_INICIO_CUATRIMESTRES }] },
-          { role: "user", parts: [{ text: PROMPT_FIN_CUATRIMESTRES }] },
-          { role: "user", parts: [{ text: PROMPT_EXAMENES_FINALES }] },
-          { role: "user", parts: [{ text: PROMPT_VACACIONES_INVIERNO }] },
-          { role: "user", parts: [{ text: PROMPT_CONFIRMACION_INSCRIPCION }] },
-          { role: "user", parts: [{ text: INTERCAMBIO_PROMPT }] },
-          { role: "user", parts: [{ text: PROMPT_CENTRO_ESTUDIANTES }] },
-          { role: "user", parts: [{ text: PROMPT_INSCRIPCIONES }] },
-          ...updatedMessages.map((m) => ({
-            role: m.type === "userMsg" ? "user" : "model",
-            parts: [{ text: m.text }],
-          })),
-        ];
-        chat.current = await model.startChat({
-          history: chatHistory,
-        });
+    //llamo a carrera detectada, que instancia otro modelo de gemini y le pregunta si en el
+    //mensaje el usuario solicita algo relacionado al plan de estudios de alguna carrera de la unnoba.
+    const carreraDetectada = await detectarCarrera(msg);
+    let contextoCarrera = ""; //vacio el contexto de carrera
+
+    //para poder llevar mejor el conteo de tokens, meto los planes en un arreglo.
+    let planCarreraRepetido = false;
+    if (carreraDetectada !== "ninguna" && mapaCarreras[carreraDetectada]) {
+      for (let plan = 0; plan < planesCarreras.length; plan++) {
+        if (carreraDetectada == planesCarreras[plan]) {
+          planCarreraRepetido = true;
+        }
       }
-    
-      if(!planCarreraRepetido){
+      if (!planCarreraRepetido) {
         if (!planCarreraRepetido) {
           contextoCarrera = await mapaCarreras[carreraDetectada]();
           setPlanesCarreras([...planesCarreras, contextoCarrera]);
         }
       }
+    }
+
+    const infoContextoDetectada = await detectarTipoContextoUnnoba(msg);
+    let contextoInformacion = ""; // vaciar el contexto
+    let infoRepetida = false;
+    if (infoContextoDetectada !== "ninguna" && mapaInformacionGeneral[infoContextoDetectada]) {
+      for (let info of informacionUnnoba) {
+        if (info.tipo === infoContextoDetectada) {
+          infoRepetida = true;
+          break;
+        }
+      }
+
+      if (!infoRepetida) {
+        contextoInformacion = await mapaInformacionGeneral[infoContextoDetectada]();
+        setInformacionUnnoba((prev) => [
+          ...prev,
+          {
+            tipo: infoContextoDetectada,
+            contenido: contextoInformacion,
+          },
+        ]);
+      }
+    }
+
+    const carrerasToHistory = [];
+    if (contextoCarrera) {
+      const limpio = limpiarPlanEstudios(contextoCarrera);
+      const infoCarreraMsg = formatPlanEstudios(limpio);
+      carrerasToHistory.push({
+        role: "user",
+        parts: [{ text: infoCarreraMsg }],
+      });
+    } 
+
+    const infoUnnobaToHistory = informacionUnnoba.map((info) => ({
+      role: "user",
+      parts: [{ text: `${info.tipo.toUpperCase()}:\n${info.contenido}` }],
+    }));
+
+
+    // Usar IA como último recurso con respuesta por defecto en caso de error
+    try {
+      
+      const chatHistory = [
+          { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
+          { role: "user", parts: [{ text: PPS_PROMPT }] },
+          { role: "user", parts: [{ text: INTERCAMBIO_PROMPT }] },
+          { role: "user", parts: [{ text: PROMPT_CENTRO_ESTUDIANTES }] },
+          ...carrerasToHistory,
+          ...infoUnnobaToHistory,
+          ...updatedMessages.map((m) => ({
+            role: m.type === "userMsg" ? "user" : "model",
+            parts: [{ text: m.text }],
+          })),
+        ];
+      if (!chat.current) {
+        const model = genAI.current.getGenerativeModel({
+          model: API_CONFIG.model,
+        }); 
+
+        chat.current = await model.startChat({
+          history: chatHistory,
+        });
+      }
+
       // Estimar tokens antes de continuar, si excedo los 30000, le digo al usuario que inicie un nuevo chat.
       //AGG PROMPTS DE TUTE
-      const baseSystemPrompt = SYSTEM_PROMPT + PPS_PROMPT + PROMPT_CENTRO_ESTUDIANTES + INTERCAMBIO_PROMPT;
-      const totalText = baseSystemPrompt + 
-      updatedMessages.map((m) => m.text).join(" ") + planesCarreras.join(" ");
+      const totalText =
+        chatHistory.map((c) => c.parts[0].text).join(" ") +
+        updatedMessages.map((m) => m.text).join(" ") +
+        planesCarreras.join(" ") +
+        informacionUnnoba.map((i) => i.contenido).join(" ");
+
       const estimatedTokens = estimateTokenLength(totalText);
+      console.log(estimatedTokens);
       if (estimatedTokens > MAX_ESTIMATED_TOKENS) {
         setMessages((prev) => [
           ...prev,
@@ -2027,34 +2091,10 @@ const generateResponse = async (msg) => {
         return;
       }
 
-  /*
-    const model = genAI.current.getGenerativeModel({ model: API_CONFIG.model });//se instancia el modelo de GEMINI 1.5 flash
-
-    // Generar contexto base*/
-    //const baseSystemPrompt = SYSTEM_PROMPT + PPS_PROMPT + PROMPT_CENTRO_ESTUDIANTES + INTERCAMBIO_PROMPT;
-    /*//cargo el contexto mas los mensajes que le mando el usuario al arreglo chatHistory.
-    const chatHistory = [
-      { role: "user", parts: [{ text: baseSystemPrompt }] },
-      ...updatedMessages.map((m) => ({
-        role: m.type === "userMsg" ? "user" : "model",
-        parts: [{ text: m.text }],
-      })),
-    ];*/
-
-    if (contextoCarrera) {
-      const infoCarreraMsg = `📚 Información sobre la carrera consultada:\n\n${contextoCarrera}`;
-      setMessages((prev) => [
-        ...prev,
-        { type: "responseMsg", text: infoCarreraMsg },
-      ]);
-      setIsGenerating(false);
-      return;
-    }
-
       const result = await chat.current.sendMessage(msg);
       const responseText = result.response.text();
-      const wordCount = responseText.trim().split(/\s+/).length;      
-
+      const wordCount = responseText.trim().split(/\s+/).length;
+      console.log(responseText);
       // Verificar si la respuesta está vacía o es inválida
       if (!responseText || responseText.trim().length === 0) {
         throw new Error("Respuesta vacía de la IA");
@@ -2098,37 +2138,7 @@ const generateResponse = async (msg) => {
       }, RESPONSE_TYPING_SPEED);
     } catch (error) {
       console.error("Error generating response:", error);
-
-      // Proporcionar una respuesta por defecto cuando no puede responder
-      const defaultResponse = `Lo siento, no puedo responder ese tipo de consulta específica en este momento. 
-
-Te recomiendo:
-📋 **Consultar el calendario académico oficial:** https://elegi.unnoba.edu.ar/calendario/
-📞 **Contactar directamente a la universidad:** estudiantes@unnoba.edu.ar
-🌐 **Visitar la página oficial:** https://unnoba.edu.ar/
-
-¿Hay algo más en lo que pueda ayudarte con información sobre carreras, inscripciones o servicios universitarios?`;
-
-      // Simular efecto de tipeo para la respuesta por defecto
-      let i = 0;
-      const typingInterval = setInterval(() => {
-        if (i < defaultResponse.length) {
-          setStreamedResponse(defaultResponse.substring(0, i + 1));
-          i++;
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        } else {
-          clearInterval(typingInterval);
-          setMessages((prev) => [
-            ...prev,
-            { type: "responseMsg", text: defaultResponse },
-          ]);
-          setStreamedResponse("");
-          setIsGenerating(false);
-        }
-      }, RESPONSE_TYPING_SPEED);
     }
-  }
-  };
   };
 
   //input
@@ -2138,32 +2148,37 @@ Te recomiendo:
       return;
     }
     setError(null);
-    
+
     // Primero verificar si es una consulta sobre distribución de aulas
     const lowerMessage = message.toLowerCase();
-    if (lowerMessage.includes('dónde se cursa') || 
-        lowerMessage.includes('dónde cursar') || 
-        lowerMessage.includes('en qué aula') || 
-        lowerMessage.includes('en qué edificio') ||
-        lowerMessage.includes('distribución de aulas') ||
-        lowerMessage.includes('edificios') ||
-        lowerMessage.includes('ubicación')) {
-  
-      const distributionResponse = await handleClassroomDistributionQuery(message);
-      
+    if (
+      lowerMessage.includes("dónde se cursa") ||
+      lowerMessage.includes("dónde cursar") ||
+      lowerMessage.includes("en qué aula") ||
+      lowerMessage.includes("en qué edificio") ||
+      lowerMessage.includes("distribución de aulas") ||
+      lowerMessage.includes("edificios") ||
+      lowerMessage.includes("ubicación")
+    ) {
+      const distributionResponse = await handleClassroomDistributionQuery(
+        message
+      );
+
       // Si la respuesta es un objeto, extraemos el mensaje. Si no, la usamos directamente.
-      const responseText = typeof distributionResponse.message === 'string' ? distributionResponse.message : 'No se pudo obtener una respuesta.';
+      const responseText =
+        typeof distributionResponse.message === "string"
+          ? distributionResponse.message
+          : "No se pudo obtener una respuesta.";
       addPredefinedResponse(message, responseText);
       setMessage("");
       return;
     }
 
     // Si no es distribución de aulas, buscar en la base de conocimientos
-    const carreraDetectada = await detectarCarrera(message);
     const match = findBestMatch(message, KNOWLEDGE_BASE);
     //si match encontro una pregunta que coincide con el menseja del chat, responde con el banco de preguntas
-    if (match && carreraDetectada == "ninguna") {
-      addPredefinedResponse(message, match.response);                         
+    if (match){//} && carreraDetectada == "ninguna") {
+      addPredefinedResponse(message, match.response);
       setMessage("");
       return;
     } else {
@@ -2186,7 +2201,6 @@ Te recomiendo:
     ]);
     setIsResponseScreen(true);
   };
-  
 
   return {
     message,
@@ -2205,5 +2219,4 @@ Te recomiendo:
     addPredefinedResponse,
     showError,
   };
-};
 };

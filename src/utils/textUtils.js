@@ -39,7 +39,7 @@ export const findBestMatch = (userInput, predefinedQuestions) => {
   }
 
   // Se requiere un umbral de similitud para considerar una coincidencia válida
-  const SIMILARITY_THRESHOLD = 0.25;
+  const SIMILARITY_THRESHOLD = 0.75; //estaba en 0.25
 
   return maxSimilarity >= SIMILARITY_THRESHOLD ? bestMatch : null;
 }; 

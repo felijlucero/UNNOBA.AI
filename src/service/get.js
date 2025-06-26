@@ -4,7 +4,7 @@ const API_BASE_URL = "http://localhost:8080/api/unnoba";
 //NO BORRAR PARTE DE CALENDARIOS, NI INSCRIPCIONES 
 export const getContenidoCarrera = async (endPoint) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/${endPoint}`);
+    const response = await axios.get(`${API_BASE_URL}/carreras/${endPoint}`);
     return response.data;
   } catch (error) {
     console.error("Error al extraer información del enlace:", error);
