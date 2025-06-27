@@ -27,6 +27,7 @@ const InputBox = ({ message, setMessage, onSend, isGenerating, error }) => {
           type="text"
           className="input-field"
           placeholder="Escribe tu mensaje aquí..."
+          disabled={isGenerating}
         />
 
         {message && (
