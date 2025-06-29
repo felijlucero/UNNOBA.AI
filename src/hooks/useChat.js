@@ -1409,6 +1409,19 @@ export const useChat = () => {
           const typingInterval = setInterval(() => {
             if (i < formattedResponse.length) {
               setStreamedResponse(formattedResponse.substring(0, i + 1));
+              if (pausarUnnobaAi.current) {
+                clearInterval(typingInterval);
+                const interruptedText =
+                  formattedResponse.substring(0, i) + ". Se ha interrumpido la respuesta.";
+                setMessages((prev) => [
+                  ...prev,
+                  { type: "responseMsg", text: interruptedText },
+                ]);
+                setStreamedResponse("");
+                setIsGenerating(false);
+                pausarUnnobaAi.current = false;
+                return;
+              }
               i++;
               messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
             } else {
@@ -1647,6 +1660,19 @@ export const useChat = () => {
           const typingInterval = setInterval(() => {
             if (i < formattedResponse.length) {
               setStreamedResponse(formattedResponse.substring(0, i + 1));
+              if (pausarUnnobaAi.current) {
+                clearInterval(typingInterval);
+                const interruptedText =
+                  formattedResponse.substring(0, i) + ". Se ha interrumpido la respuesta.";
+                setMessages((prev) => [
+                  ...prev,
+                  { type: "responseMsg", text: interruptedText },
+                ]);
+                setStreamedResponse("");
+                setIsGenerating(false);
+                pausarUnnobaAi.current = false;
+                return;
+              }
               i++;
               messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
             } else {
@@ -1758,6 +1784,19 @@ export const useChat = () => {
           const typingInterval = setInterval(() => {
             if (i < formattedResponse.length) {
               setStreamedResponse(formattedResponse.substring(0, i + 1));
+              if (pausarUnnobaAi.current) {
+                clearInterval(typingInterval);
+                const interruptedText =
+                  formattedResponse.substring(0, i) + ". Se ha interrumpido la respuesta.";
+                setMessages((prev) => [
+                  ...prev,
+                  { type: "responseMsg", text: interruptedText },
+                ]);
+                setStreamedResponse("");
+                setIsGenerating(false);
+                pausarUnnobaAi.current = false;
+                return;
+              }
               i++;
               messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
             } else {
@@ -1867,6 +1906,19 @@ export const useChat = () => {
           const typingInterval = setInterval(() => {
             if (i < formattedResponse.length) {
               setStreamedResponse(formattedResponse.substring(0, i + 1));
+              if (pausarUnnobaAi.current) {
+                clearInterval(typingInterval);
+                const interruptedText =
+                  formattedResponse.substring(0, i) + ". Se ha interrumpido la respuesta.";
+                setMessages((prev) => [
+                  ...prev,
+                  { type: "responseMsg", text: interruptedText },
+                ]);
+                setStreamedResponse("");
+                setIsGenerating(false);
+                pausarUnnobaAi.current = false;
+                return;
+              }
               i++;
               messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
             } else {
@@ -2091,7 +2143,8 @@ export const useChat = () => {
         return;
       }
 
-      const result = await chat.current.sendMessage(msg);
+      const scopedMsg = `${msg}\n\nRecuerda: solo puedo ayudarte con temas relacionados con la UNNOBA.`;
+      const result = await chat.current.sendMessage(scopedMsg);
       const responseText = result.response.text();
       const wordCount = responseText.trim().split(/\s+/).length;
       console.log(responseText);
@@ -2218,5 +2271,8 @@ export const useChat = () => {
     generateResponse,
     addPredefinedResponse,
     showError,
+    stopGenerating: () => {
+      pausarUnnobaAi.current = true;
+    },
   };
 };

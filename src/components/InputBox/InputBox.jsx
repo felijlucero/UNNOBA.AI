@@ -4,7 +4,7 @@ import { IoSend } from "react-icons/io5";
 import PropTypes from "prop-types";
 import "./InputBox.css";
 
-const InputBox = ({ message, setMessage, onSend, isGenerating, error }) => {
+const InputBox = ({ message, setMessage, onSend, isGenerating, error, onStop }) => {
   const inputRef = useRef(null);
 
   const handleKeyDown = (e) => {
@@ -30,15 +30,26 @@ const InputBox = ({ message, setMessage, onSend, isGenerating, error }) => {
           disabled={isGenerating}
         />
 
-        {message && (
+        {message && !isGenerating && (
           <motion.button
             className="send-button"
             onClick={onSend}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            disabled={isGenerating}
           >
             <IoSend />
+          </motion.button>
+        )}
+        {isGenerating && (
+          <motion.button
+            className="stop-button"
+            onClick={onStop}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="1" ry="1"/>
+            </svg>
           </motion.button>
         )}
       </motion.div>
@@ -62,6 +73,7 @@ InputBox.propTypes = {
   onSend: PropTypes.func.isRequired,
   isGenerating: PropTypes.bool.isRequired,
   error: PropTypes.string,
+  onStop: PropTypes.func,
 };
 
 export default InputBox;

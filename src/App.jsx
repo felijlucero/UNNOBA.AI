@@ -33,6 +33,7 @@ const App = () => {
     newChat,
     generateResponse,
     addPredefinedResponse,
+    stopGenerating,
   } = useChat();
 
   // Efectos para los eventos de teclado
@@ -97,6 +98,7 @@ const App = () => {
               isDarkMode={isDarkMode}
               toggleTheme={toggleTheme}
               onNewChat={newChat}
+              onStop={stopGenerating}
               isGenerating={isGenerating}
               showNewChatButton={true}
             />
@@ -134,6 +136,7 @@ const App = () => {
               <Header
                 isDarkMode={isDarkMode}
                 toggleTheme={toggleTheme}
+                onStop={stopGenerating}
                 showNewChatButton={false}
               />
             </div>
@@ -154,6 +157,7 @@ const App = () => {
           onSend={hitRequest}
           isGenerating={isGenerating}
           error={error}
+          onStop={stopGenerating}
         />
         <motion.p
           className="bottom-text"
