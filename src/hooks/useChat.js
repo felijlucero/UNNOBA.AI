@@ -907,163 +907,44 @@ export const useChat = () => {
       "asignaturas",
       "asignatura",
     ];
-    /*const esPreguntaMateria = palabrasMateria.some((palabra) =>
+    const esPreguntaMateria = palabrasMateria.some((palabra) =>
       lowerMessage.includes(palabra)
     );
-
     if (esPreguntaMateria) {
-      const carreraDetectada = detectarCarrera(msg);
-
-      if (carreraDetectada) {
+      const carreraDetectada = await detectarCarrera(msg);
+      if (carreraDetectada !== "ninguna" && mapaCarreras[carreraDetectada]) {
         try {
-          const contenidoCarrera = await carreraDetectada.endpoint();
-          const materiasParseadas = parsearMaterias(
-            contenidoCarrera,
-            carreraDetectada
-          );
-
-          if (materiasParseadas) {
-            const formattedResponse = formatUrls(materiasParseadas);
-
+          const contenidoCarrera = await mapaCarreras[carreraDetectada]();
+          const materias = extraerMateriasTexto(contenidoCarrera);
+          if (materias && materias.length > 0) {
+            let responseText = `📚 Materias de ${carreraDetectada.toUpperCase()} - UNNOBA\n\n`;
+            materias.forEach((materia) => {
+              responseText += `• ${materia}\n`;
+            });
             // Simular efecto de tipeo para la respuesta directa
             let i = 0;
             const typingInterval = setInterval(() => {
-              if (i < formattedResponse.length) {
-                setStreamedResponse(formattedResponse.substring(0, i + 1));
+              if (i < responseText.length) {
+                setStreamedResponse(responseText.substring(0, i + 1));
                 i++;
                 messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
               } else {
                 clearInterval(typingInterval);
                 setMessages((prev) => [
                   ...prev,
-                  { type: "responseMsg", text: formattedResponse },
+                  { type: "responseMsg", text: responseText },
                 ]);
                 setStreamedResponse("");
                 setIsGenerating(false);
               }
             }, RESPONSE_TYPING_SPEED);
-
-            return; // Salir temprano, no usar la IA
+            return;
           }
         } catch (error) {
           console.error("Error obteniendo materias de carrera:", error);
-          // Continuar con la IA si hay error en el endpoint específico
         }
       }
-    }*/
-    /*
-    // Verificar si es una pregunta sobre biblioteca
-    for (const [pregunta, respuesta] of Object.entries(BIBLIOTECA_RESPONSES)) {
-      const preguntaLower = pregunta.toLowerCase();
-      const palabrasClaveGenerales = [
-        "biblioteca",
-        "libros",
-        "prestamo",
-        "préstamo",
-      ];
-
-      // Verificar si el mensaje contiene palabras clave de biblioteca
-      const esPreguntaBiblioteca = palabrasClaveGenerales.some((palabra) =>
-        lowerMessage.includes(palabra)
-      );
-
-      if (esPreguntaBiblioteca) {
-        // Buscar coincidencias específicas para cada pregunta
-        let esCoincidencia = false;
-
-        if (
-          preguntaLower.includes("dónde") &&
-          preguntaLower.includes("biblioteca") &&
-          (lowerMessage.includes("donde") ||
-            lowerMessage.includes("ubicacion") ||
-            lowerMessage.includes("direccion"))
-        ) {
-          esCoincidencia = pregunta === "¿Dónde está la biblioteca?";
-        } else if (
-          preguntaLower.includes("horario") &&
-          (lowerMessage.includes("horario") ||
-            lowerMessage.includes("hora") ||
-            lowerMessage.includes("abre"))
-        ) {
-          esCoincidencia = pregunta === "¿Qué horario tiene la biblioteca?";
-        } else if (
-          preguntaLower.includes("digital") &&
-          (lowerMessage.includes("digital") ||
-            lowerMessage.includes("online") ||
-            lowerMessage.includes("virtual"))
-        ) {
-          esCoincidencia = pregunta === "¿Cómo accedo a la biblioteca digital?";
-        } else if (
-          preguntaLower.includes("pedir") &&
-          preguntaLower.includes("libro") &&
-          (lowerMessage.includes("pedir") ||
-            lowerMessage.includes("solicitar") ||
-            lowerMessage.includes("sacar"))
-        ) {
-          esCoincidencia =
-            pregunta === "¿Cómo hago para pedir un libro prestado?";
-        } else if (
-          preguntaLower.includes("tiempo") &&
-          preguntaLower.includes("préstamo") &&
-          (lowerMessage.includes("tiempo") ||
-            lowerMessage.includes("cuanto") ||
-            lowerMessage.includes("duracion"))
-        ) {
-          esCoincidencia =
-            pregunta === "¿Cuánto tiempo puedo tener un libro en préstamo?";
-        } else if (
-          preguntaLower.includes("renovar") &&
-          (lowerMessage.includes("renovar") ||
-            lowerMessage.includes("extender") ||
-            lowerMessage.includes("ampliar"))
-        ) {
-          esCoincidencia =
-            pregunta === "¿Puedo renovar el préstamo de un libro?";
-        } else if (
-          (preguntaLower.includes("atraso") ||
-            preguntaLower.includes("devolucion")) &&
-          (lowerMessage.includes("atraso") ||
-            lowerMessage.includes("tarde") ||
-            lowerMessage.includes("demora") ||
-            lowerMessage.includes("devolucion"))
-        ) {
-          esCoincidencia =
-            pregunta === "¿Qué pasa si me atraso en la devolución?";
-        } else if (
-          preguntaLower.includes("registrarme") &&
-          (lowerMessage.includes("registro") ||
-            lowerMessage.includes("registrar") ||
-            lowerMessage.includes("inscribir"))
-        ) {
-          esCoincidencia =
-            pregunta === "¿Necesito registrarme para acceder a la biblioteca?";
-        }
-
-        if (esCoincidencia) {
-          const formattedResponse = formatUrls(respuesta);
-
-          // Simular efecto de tipeo para la respuesta directa
-          let i = 0;
-          const typingInterval = setInterval(() => {
-            if (i < formattedResponse.length) {
-              setStreamedResponse(formattedResponse.substring(0, i + 1));
-              i++;
-              messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-            } else {
-              clearInterval(typingInterval);
-              setMessages((prev) => [
-                ...prev,
-                { type: "responseMsg", text: formattedResponse },
-              ]);
-              setStreamedResponse("");
-              setIsGenerating(false);
-            }
-          }, RESPONSE_TYPING_SPEED);
-
-          return; // Salir temprano, no usar la IA
-        }
-      }
-    }*/
+    }
 
     // Detección específica para INSCRIPCIÓN DE MATERIAS (DEBE IR ANTES que finales y exámenes)
     const palabrasInscripcionMaterias = [
