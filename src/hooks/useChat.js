@@ -2004,11 +2004,8 @@ export const useChat = () => {
 
       // Estimar tokens antes de continuar, si excedo los 30000, le digo al usuario que inicie un nuevo chat.
       //AGG PROMPTS DE TUTE
-      const totalText =
-        chatHistory.map((c) => c.parts[0].text).join(" ") +
-        updatedMessages.map((m) => m.text).join(" ") +
-        planesCarreras.join(" ") +
-        informacionUnnoba.map((i) => i.contenido).join(" ");
+      const totalText = chatHistory.map((c) => c.parts[0].text).join(" ");
+
 
       const estimatedTokens = estimateTokenLength(totalText);
       console.log(estimatedTokens);
