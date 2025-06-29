@@ -3,7 +3,11 @@ import PropTypes from "prop-types";
 import MessageBubble from "../MessageBubble/MessageBubble";
 import LoadingDots from "../LoadingDots/LoadingDots";
 import TypingCursor from "../TypingCursor/TypingCursor";
-import { formatResponseText } from "../../utils/formatters";
+import {
+  formatResponseText,
+  formatCalendarResponse,
+  formatDateInfo,
+} from "../../utils/formatters";
 import "./ChatScreen.css";
 
 const ChatScreen = ({
@@ -35,6 +39,34 @@ const ChatScreen = ({
     },
   };
 
+  // Función para formatear respuestas en streaming
+  const getFormattedStreamedResponse = (text) => {
+    if (!text) return "";
+
+    // Detectar tipo de respuesta para aplicar formateo apropiado
+    if (
+      text.includes("CALENDAR") ||
+      text.includes("ACADÉMICO") ||
+      text.includes("📅") ||
+      text.includes("EXÁMENES") ||
+      text.includes("INSCRIPCIONES") ||
+      text.includes("FERIADOS")
+    ) {
+      return formatCalendarResponse(text);
+    }
+
+    // Detectar información de fechas
+    const hasDateInfo =
+      /\d{4}-\d{2}-\d{2}|\d{1,2}\s+de\s+\w+|\w+\s+\d{1,2}\s+al?\s+\d{1,2}/i.test(
+        text
+      );
+    if (hasDateInfo) {
+      return formatDateInfo(text);
+    }
+
+    return formatResponseText(text);
+  };
+
   return (
     <motion.div
       className="messages-container"
@@ -55,9 +87,9 @@ const ChatScreen = ({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bot-message"
+              className="bot-message streaming-message"
               dangerouslySetInnerHTML={{
-                __html: formatResponseText(streamedResponse),
+                __html: getFormattedStreamedResponse(streamedResponse),
               }}
             />
             <TypingCursor />
